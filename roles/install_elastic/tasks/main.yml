@@ -1,0 +1,189 @@
+---
+# tasks file for elasticsearch
+
+- name: Wait for SSH
+  ansible.builtin.wait_for_connection:
+
+- name: Import elastic rpm key
+  ansible.builtin.rpm_key:
+    state: 'present'
+    key: 'https://artifacts.elastic.co/GPG-KEY-elasticsearch'
+  tags:
+    - create
+    - install_es
+
+- name: Download installer
+  ansible.builtin.get_url:
+    url: '{{es_installer_url}}'
+    dest: '{{tmp_dir}}/elasticsearch.rpm'
+    mode: '0440'
+  tags: 
+    - create
+    - install_es
+
+- name: Download sha512
+  ansible.builtin.get_url:
+    url: '{{es_installer_sha_url}}'
+    dest: '{{tmp_dir}}/elasticsearch.sha512'
+    mode: '0440'
+  tags: 
+    - create
+    - install_es
+
+- name: Get sha256 sum of downloaded installer
+  stat:
+    path: '{{tmp_dir}}/elasticsearch.rpm'
+    checksum_algorithm: sha512
+    get_checksum: yes
+  register: file_stat
+  tags: 
+    - create
+    - debug
+    - install_es
+
+- name: Register file hash
+  ansible.builtin.shell:
+    cmd: "cat {{tmp_dir}}/elasticsearch.sha512 | awk '{print $1}'"
+  register: file_hash
+  tags:
+    - create
+    - debug
+    - install_es
+
+- name: Print hashes
+  ansible.builtin.debug:
+    msg: 'File Contents: >{{file_hash.stdout}}< File Hash >{{file_stat.stat.checksum}}<'
+  tags: 
+    - debug
+
+- name: Verify sha256sum of download before execution.
+  fail:
+    msg: "Failure, file is not correct."
+  when: file_stat.stat.checksum != file_hash.stdout
+  tags:
+    - create
+    - debug
+    - install_es
+
+- name: Disable IPV6
+  ansible.posix.sysctl:
+    name: '{{ item.setting }}'
+    value: '{{ item.value }}'
+    sysctl_set: true
+  loop:
+    - { setting: 'net.ipv6.conf.all.disable_ipv6', value: '1' }
+    - { setting: 'net.ipv6.conf.default.disable_ipv6', value: '1' }
+    - { setting: 'net.ipv6.conf.lo.disable_ipv6', value: '1' }
+    - { setting: 'net.ipv6.conf.eth0.disable_ipv6', value: '1'}
+  tags:
+    - create
+    - debug
+    - install_es
+
+- name: Stop and disable firewalld.
+  service:
+    name: firewalld
+    state: stopped
+    enabled: False
+  tags:
+    - create
+    - debug
+    - install_es
+
+- name: Install elastic package
+  ansible.builtin.yum:
+    name: '{{tmp_dir}}/elasticsearch.rpm'
+    state: present
+  register: install_out
+  tags: 
+    - create
+    - install_es
+    - debug
+
+- name: Remove elastic package
+  ansible.builtin.yum:
+    name: 'elasticsearch-8.9.0-1.x86_64'
+    state: absent
+  register: install_out
+  tags:
+    - remove_es
+    - debug
+
+- name: Print installer output
+  ansible.builtin.debug:
+    msg: "{{ install_out }}.split('\n') }}"
+  tags: 
+    - create
+    - debug
+    - install_es
+    - remove_es
+
+- name: Add settings to elasticsearch.yml
+  ansible.builtin.lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    line: '{{ item.line }}'
+  loop:
+    - { line: 'discovery.seed_hosts:' }
+    - { line: '   - es01.powellcompanies.com' }
+    - { line: '   - es02.powellcompanies.com' }
+    - { line: '   - es03.powellcompanies.com' }
+    - { line: 'network.host: 0.0.0.0' }
+    - { line: 'cluster.name: pcluster'}
+  tags:
+    - create
+    - install_es
+
+- name: Replace initial master node in elasticsearch.yml
+  ansible.builtin.lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: '^cluster.initial_master_nodes'
+    line: '{{ item.line }}'
+  loop:
+    - { line: 'cluster.initial_master_nodes: ["es01.powellcompanies.com"]' }
+  tags:
+    - create
+    - install_es
+
+- name: Set JVM Options
+  ansible.builtin.lineinfile:
+    path: /etc/elasticsearch/jvm.options
+    #regexp: '^#discovery.seed_hosts: ["host1", "host2"]'
+    line: '{{ item.line }}'
+  loop:
+    - { line: '-Djava.net.preferIPv4Stack=true' }
+  tags:
+    - create
+    - install_es
+
+- name: Disable verification_mode
+  ansible.builtin.lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: '^  verification_mode'
+    line: '  verification_mode: none'
+  tags:
+    - create
+    - install_es
+
+- name: Enable elasticsearch
+  ansible.builtin.systemd:
+    enabled: true
+    name: elasticsearch.service
+  tags:
+    - create
+    - install_es
+
+- name: Start elasticsearch
+  ansible.builtin.systemd:
+    state: started
+    name: elasticsearch.service
+  tags:
+    - create
+    - install_es
+
+
+#- name: Create enrollment token on first host
+#/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node
+
+#- name: Enroll other hosts
+#/usr/share/elasticsearch/bin/elasticsearch-reconfigure-node --enrollment-token <enrollment-token>
+

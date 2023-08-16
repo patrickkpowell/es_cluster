@@ -1,0 +1,7 @@
+---
+# defaults file for roles/provision_vms
+  packages:
+    - 'qemu-guest-agent'
+    - 'yum-utils'
+    - 'net-tools'
+    - 'mlocate'

@@ -1,0 +1,95 @@
+---
+# tasks file for roles/provision_vms
+# Post VM deployment provisioning
+
+- name: Print hostnames
+  ansible.builtin.debug:
+    msg: '{{ ansible_ssh_host | default(inventory_hostname) }}'
+  tags: 
+    - debug
+
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+  tags:
+    - create
+    - provision_vms
+
+- name: Wait for cloud init to finish
+  community.general.cloud_init_data_facts:
+    filter: status
+  register: result
+  until: "result.cloud_init_data_facts.status.v1.stage is defined and not result.cloud_init_data_facts.status.v1.stage"
+  retries: 50
+  delay: 5
+  delegate_to: '{{item}}'
+  with_items:
+    - "{{groups['esnodes']}}"
+    - "{{groups['esmaster']}}"
+  tags:
+    - create
+    - provision_vms
+
+- name: Install packages
+  ansible.builtin.package:
+    name: '{{item}}'
+    state: 'present'
+  loop:
+    "{{packages}}"
+  tags:
+    - provision_vms
+    - create
+
+- name: Update
+  ansible.builtin.package:
+    name: '*'
+    state: 'latest'
+  tags:
+    - create
+    - provision_vms
+
+- name: Disable SELinux
+  ansible.posix.selinux:
+    state: disabled
+  register: se_changed
+  tags:
+    - create
+    - provision_vms
+    - debug
+
+- name: Print se_changed
+  ansible.builtin.debug:
+    msg: '{{ se_changed.reboot_required }}'
+  tags: 
+    - debug
+    - create
+
+- name: check to see if we need a reboot
+  command: needs-restarting -r
+  register: needs_restart
+  ignore_errors: yes
+  tags:
+    - create
+    - debug
+
+- name: display result
+  debug:
+    var: needs_restart.rc
+  tags:
+    - create
+    - debug
+
+- name: Reboot Server if Necessary
+  command: shutdown -r now "Ansible Updates Triggered"
+  become: true
+  async: 30
+  poll: 0
+  when: (needs_restart.rc == 1) or (se_changed.reboot_required)
+  tags:
+    - create
+    - debug
+
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+  tags: 
+    - debug
+    - create

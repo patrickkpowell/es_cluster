@@ -1,0 +1,29 @@
+---
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3.11
+  children:
+    proxmox:
+      hosts:
+        192.168.3.3:
+          ansible_user: 'root'
+    esmaster:
+      hosts:
+        es01.powellcompanies.com: null
+    esnodes:
+      hosts:
+        es02.powellcompanies.com: null
+        es03.powellcompanies.com: null
+      vars:
+        es_installer_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.9.0-x86_64.rpm'
+        es_installer_sha_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.9.0-x86_64.rpm.sha512'
+    agents:
+      hosts:
+        192.168.3.132:
+          ansible_python_interpreter: /usr/bin/python3
+        192.168.3.74:
+          ansible_python_interpreter: /usr/bin/python3
+  vars:
+    tmp_dir: '/tmp/'

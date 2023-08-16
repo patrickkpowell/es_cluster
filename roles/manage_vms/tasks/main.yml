@@ -1,0 +1,118 @@
+---
+# tasks file for roles/deploy_vms
+- name: Deploy Proxmox VM's
+  community.general.proxmox_kvm:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    clone: 'blah'
+    vmid: '{{template_id}}'
+    name: '{{item.name}}'
+    node: '{{vm_node}}'
+    memory: '{{vm_memory}}'
+    state: 'present'
+  loop:
+    "{{vms}}"
+  tags:
+    - delpoy_vms
+    - create
+
+- name: Shutdown Proxmox VM's
+  community.general.proxmox_kvm:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{item.name}}'
+    node: '{{vm_node}}'
+    state: 'stopped'
+  loop:
+    "{{vms}}"
+  tags:
+    - destroy
+    - shutdown
+
+- name: Sleep for 300 seconds and continue with play
+  ansible.builtin.wait_for:
+    timeout: 10
+  tags:
+    - destroy
+
+- name: Destroy Proxmox VM's
+  community.general.proxmox_kvm:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{item.name}}'
+    node: '{{vm_node}}'
+    state: 'absent'
+  loop:
+    "{{vms}}"
+  tags:
+    - destroy
+
+- name: Get Facts
+  community.general.proxmox_kvm:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    node: '{{vm_node}}'
+    name: '{{item.name}}'
+    validate_certs: no
+    state: current
+  loop:
+    "{{vms}}"
+  register: hostinfo
+  tags:
+    - delpoy_vms
+    - create
+
+- debug: msg="{{ hostinfo.results[0].item.mac }}"
+  tags:
+    - delpoy_vms
+
+- name: Remove exiting template nic
+  community.general.proxmox_nic:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{item.name}}'
+    interface: '{{item.interface}}'
+    state: 'absent'
+  loop:
+    "{{vms}}"
+  when:
+    hostinfo.results[0].item.mac != item.mac and hostinfo.results[1].item.mac != item.mac and hostinfo.results[2].item.mac != item.mac
+    #item.mac not in hostinfo.results[].item.mac
+  tags:
+    - create
+    - delpoy_vms
+
+- name: Replace interface with predefined MAC
+  community.general.proxmox_nic:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{item.name}}'
+    interface: '{{item.interface}}'
+    bridge: '{{item.bridge}}'
+    mac: '{{item.mac}}'
+    state: 'present'
+  loop:
+    "{{vms}}"
+  tags:
+    - create
+    - delpoy_vms
+
+- name: Power on VM's
+  community.general.proxmox_kvm:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{item.name}}'
+    node: '{{vm_node}}'
+    state: 'started'
+  loop:
+    "{{vms}}"
+  tags:
+    - create
+    - delpoy_vms

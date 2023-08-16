@@ -1,0 +1,10 @@
+.*
+pveapitoken.txt
+group_vars/all
+playbooks/*
+!playbooks/deploy_es_cluster.yml
+hosts.yml
+roles/create_cluster_token
+roles/join_cluster
+roles/manage_agents
+!/.gitignore

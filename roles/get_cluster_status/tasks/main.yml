@@ -1,0 +1,46 @@
+---
+# tasks file for get_cluster_status
+- name: Get new password
+  ansible.builtin.shell:
+    cmd: "echo y | sudo /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic 2>&1 | /usr/bin/grep 'New value' | /usr/bin/awk -F: '{print $2}' | /usr/bin/sed -e 's/^ //g'"
+  register: elasticpass
+
+  tags:
+    - create
+    - debug
+    - install_es
+    - status
+
+- name: Print new elastic password
+  ansible.builtin.debug:
+    msg: "{{ elasticpass.stdout }}"
+  tags: 
+    - create
+    - debug
+    - install_es
+    - status
+
+- name: Check cluster status
+  ansible.builtin.uri:
+    url: 'https://{{item}}:9200/_cluster/health?pretty=true'
+    return_content: true
+    url_username: 'elastic'
+    url_password: '{{elasticpass.stdout}}'
+    validate_certs: false
+  register: response
+  with_items:
+    - "{{groups['esmaster']}}"
+  tags: 
+    - create
+    - debug
+    - install_es
+    - status
+
+- name: Print cluster status
+  ansible.builtin.debug:
+    msg: "{{ response }}"
+  tags: 
+    - create
+    - debug
+    - install_es
+    - status

@@ -1,0 +1,27 @@
+- name: Create a Proxmox VM's
+  hosts: proxmox
+  gather_facts: true
+  roles:
+    - roles/manage_vms
+    
+- name: Provision Proxmox VM's
+  hosts: 
+    - esnodes
+    - esmaster
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/provision_vms
+    - roles/install_elastic
+
+- name: Get Cluster Status
+  hosts: 
+    - esmaster
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/get_cluster_status
