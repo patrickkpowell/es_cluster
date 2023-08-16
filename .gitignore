@@ -1,6 +1,6 @@
 .*
 pveapitoken.txt
-group_vars/all
+group_vars/all.yml
 playbooks/*
 !playbooks/deploy_es_cluster.yml
 hosts.yml

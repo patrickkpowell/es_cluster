@@ -9,7 +9,7 @@ Requirements
 Role Variables
 --------------
 
-esmaster:  master node
+esmaster:  master node\
 
 Dependencies
 ------------

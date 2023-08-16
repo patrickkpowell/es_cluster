@@ -10,9 +10,9 @@ Requirements
 Role Variables
 --------------
 
-  packages:
-    - 'qemu-guest-agent'
-    - '...'
+  packages:\
+    - 'qemu-guest-agent'\
+    - '...'\
 
 Dependencies
 ------------

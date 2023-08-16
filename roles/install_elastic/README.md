@@ -10,9 +10,9 @@ Requirements
 Role Variables
 --------------
 
-es_installer_url: 'http://domain.com/elasticsearch-8.9.0-x86_64.rpm'
-es_installer_sha_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.9.0-x86_64.rpm.sha512'
-tmp_dir: '<artifact download directory>'
+es_installer_url: 'http://domain.com/elasticsearch-8.9.0-x86_64.rpm'\
+es_installer_sha_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.9.0-x86_64.rpm.sha512'\
+tmp_dir: '<artifact download directory>'\
 
 Dependencies
 ------------
