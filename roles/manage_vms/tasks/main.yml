@@ -81,8 +81,7 @@
   loop:
     "{{vms}}"
   when:
-    hostinfo.results[0].item.mac != item.mac and hostinfo.results[1].item.mac != item.mac and hostinfo.results[2].item.mac != item.mac
-    #item.mac not in hostinfo.results[].item.mac
+    item.mac not in item.mac
   tags:
     - create
     - delpoy_vms
