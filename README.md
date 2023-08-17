@@ -9,8 +9,8 @@ Requirements
 
 Role Variables
 --------------
-## group_vars/all.yml
-### manage_vms
+### group_vars/all.yml
+#### manage_vms Role
 
   api_user: Proxmox API username - Generate this with "ansible-vault encrypt_string '<api password>' --name 'api_pass'"\
   api_pass: Proxmox API password - Generate this with "ansible-vault encrypt_string '<api password>' --name 'api_pass'"\
@@ -27,7 +27,7 @@ Role Variables
     - {name: 'es02.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:56'}\
     - {name: 'es03.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:57'}\
 
-### provision_vms
+#### provision_vms Role
   packages:
     - 'qemu-guest-agent'
     - 'yum-utils'
@@ -35,7 +35,7 @@ Role Variables
     - 'mlocate'
     - 'wget'
 
-### install_elastic
+#### install_elastic Role
   es_installer_url: 'http://artifacts.elastic.co/elasticsearch/elasticsearch-8.9.0-x86_64.rpm' \
   es_installer_sha_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.9.0-x86_64.rpm.sha512' 
     
