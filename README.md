@@ -5,6 +5,7 @@ Set of roles to deploy an Elasticsearch cluster on Proxmox.
 
 ### Status
 Elasticsearch nodes work.  Optimization needed.
+
 Working on kibana installation role.
 
 Requirements
