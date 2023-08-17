@@ -18,7 +18,7 @@ TODO:
 
 Set Firewall Rules
 
-Set Selinux rules
+Set selinux rules
 
 Jinja2 template for elasticsearch.yml
 
