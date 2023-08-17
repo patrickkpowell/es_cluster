@@ -8,12 +8,23 @@
   hosts: 
     - esnodes
     - esmaster
+    - kibnodes
   become: yes
   become_method: sudo
   become_user: root
   gather_facts: false
   roles:
     - roles/provision_vms
+
+- name: Install Elasticsearch
+  hosts: 
+    - esnodes
+    - esmaster
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
     - roles/install_elastic
 
 - name: Get Cluster Status
@@ -25,3 +36,23 @@
   gather_facts: false
   roles:
     - roles/get_cluster_status
+
+- name: Create Cluster Token
+  hosts:
+    - esmaster
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/create_cluster_token
+
+- name: Install Kibana
+  hosts: 
+    - kibnodes
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/install_kibana

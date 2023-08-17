@@ -5,3 +5,4 @@
     - 'yum-utils'
     - 'net-tools'
     - 'mlocate'
+    - 'wget'
