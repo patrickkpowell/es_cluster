@@ -21,7 +21,10 @@ The only role that should require anything Proxmox is the manage_vms role.  Elas
 Role Variables
 --------------
 ## group_vars/all.yml
-### Role manage_vms
+
+Reccomend to override variables with group_vars although this can be taylored to your needs.
+
+### roles/manage_vms
 
 ```
 api_user:
@@ -50,7 +53,7 @@ api_user:
     - {name: 'es03.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:57'}
 ```
 
-### Role provision_vms
+### roles/provision_vms
   ```
   packages:
     - 'qemu-guest-agent'
@@ -60,7 +63,7 @@ api_user:
     - 'wget'
 ```
 
-### Role install_elastic
+### roles/install_elastic
 ```
   es_installer_url: 'http://artifacts.elastic.co/elasticsearch/elasticsearch-8.9.0-x86_64.rpm' \
   es_installer_sha_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.9.0-x86_64.rpm.sha512' 
@@ -71,8 +74,11 @@ Dependencies
 
 Example Playbook
 ----------------
-## To run the playbook:
+### To run the playbook:
 ### Create
+
+Run from within the es_cluster directory
+
 ```
 ansible-playbook -i hosts.yml playbooks/deploy_es_cluster.yml --vault-password-file=./.pass --tags create
 ```
@@ -82,7 +88,7 @@ ansible-playbook -i hosts.yml playbooks/deploy_es_cluster.yml --vault-password-f
 ansible-playbook -i hosts.yml playbooks/deploy_es_cluster.yml --vault-password-file=./.pass --tags destroy
 ```
 
-### Playbook
+### Playbook - playbooks/deploy_es_cluster.yml
 ```
   - name: Create a Proxmox VM's
     hosts: proxmox
