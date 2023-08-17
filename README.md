@@ -6,7 +6,21 @@ Set of roles to deploy an Elasticsearch cluster on Proxmox.
 ### Status
 Elasticsearch nodes work.  Optimization needed.
 
-Working on kibana installation role.
+Working on kibana installation role.  Currently getting this error.
+
+```
+[ERROR][elasticsearch-service] Unable to retrieve version information from Elasticsearch nodes. self signed certificate in certificate chain
+```
+
+Possibly an openssl role to generate certificates from the same CA and ditribute via ansible.
+
+TODO:
+
+Set Firewall Rules
+
+Set Selinux rules
+
+Jinja2 template for elasticsearch.yml
 
 Requirements
 ------------
@@ -19,6 +33,8 @@ These roles are written for CentOS 8 and would need to be extended to support ot
 
 The only role that should require anything Proxmox is the manage_vms role.  Elasticsearch deployment roles should be compatible ith other virtual or physical infrastructure.
 
+Network infrastructure should be configured with DHCP reservations and DNS enries for all systems defines in the "vms" defined below.  
+
 Role Variables
 --------------
 ## group_vars/all.yml
@@ -28,9 +44,8 @@ Reccomend to override variables with group_vars although this can be taylored to
 ### roles/manage_vms
 
 ```
-api_user:
+  api_user:
     Proxmox API username - Generate this with "ansible-vault encrypt_string '<api password>' --name
-
   api_pass:
     Proxmox API password - Generate this with "ansible-vault encrypt_string '<api password>' --name 'api_pass'"
   api_port:
@@ -97,7 +112,7 @@ ansible-playbook -i hosts.yml playbooks/deploy_es_cluster.yml --vault-password-f
     roles:
       - roles/manage_vms
       
-  - name: Provision Proxmox VM's
+  - name: Provision OS
     hosts: 
       - esnodes
       - esmaster

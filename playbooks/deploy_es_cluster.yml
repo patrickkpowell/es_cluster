@@ -46,6 +46,8 @@
   gather_facts: false
   roles:
     - roles/create_cluster_token
+  tags:
+    - deploy_kibana
 
 - name: Install Kibana
   hosts: 
@@ -56,3 +58,5 @@
   gather_facts: false
   roles:
     - roles/install_kibana
+  tags:
+    - deploy_kibana

@@ -198,7 +198,6 @@
     - create
     - install_es
 
-
 #- name: Create enrollment token on first host
 #/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node
 

@@ -1,0 +1,158 @@
+---
+# tasks file for roles/install_kibana
+
+- name: Import kibana rpm key
+  ansible.builtin.rpm_key:
+    state: 'present'
+    key: 'https://artifacts.elastic.co/GPG-KEY-elasticsearch'
+  tags:
+    - create
+    - install_kib
+
+- name: Print installer download locations
+  ansible.builtin.debug:
+    msg: 'Downloading from: >{{kib_installer_url}}< To: >{{tmp_dir}}/kibana.rpm<'
+  tags: 
+    - create
+    - debug
+
+- name: Check if file has already been downloaded
+  ansible.builtin.stat:
+    path: '{{tmp_dir}}/kibana.rpm'
+  register: kib_file_exist
+  tags: 
+    - create
+    - install_kib
+
+- name: Download installer
+  ansible.builtin.get_url:
+    url: '{{kib_installer_url}}'
+    dest: '{{tmp_dir}}/kibana.rpm'
+    mode: '0440'
+    validate_certs: false
+  when: kib_file_exist.stat.exists == False
+  tags: 
+    - create
+    - install_kib
+    - debug
+
+- name: Download sha512
+  ansible.builtin.get_url:
+    url: '{{kib_installer_sha_url}}'
+    dest: '{{tmp_dir}}/kibana.sha512'
+    mode: '0440'
+  tags: 
+    - create
+    - install_kib
+
+- name: Get sha256 sum of downloaded installer
+  stat:
+    path: '{{tmp_dir}}/kibana.rpm'
+    checksum_algorithm: sha512
+    get_checksum: yes
+  register: file_stat
+  tags: 
+    - create
+    - debug
+    - install_kib
+
+- name: Register file hash
+  ansible.builtin.shell:
+    cmd: "cat {{tmp_dir}}/kibana.sha512 | awk '{print $1}'"
+  register: file_hash
+  tags:
+    - create
+    - debug
+    - install_kib
+
+- name: Print hashes
+  ansible.builtin.debug:
+    msg: 'File Contents: >{{file_hash.stdout}}< File Hash >{{file_stat.stat.checksum}}<'
+  tags: 
+    - debug
+
+- name: Verify sha256sum of download before execution.
+  fail:
+    msg: "Failure, file is not correct."
+  when: file_stat.stat.checksum != file_hash.stdout
+  tags:
+    - create
+    - debug
+    - install_kib
+
+- name: Disable IPV6
+  ansible.posix.sysctl:
+    name: '{{ item.setting }}'
+    value: '{{ item.value }}'
+    sysctl_set: true
+  loop:
+    - { setting: 'net.ipv6.conf.all.disable_ipv6', value: '1' }
+    - { setting: 'net.ipv6.conf.default.disable_ipv6', value: '1' }
+    - { setting: 'net.ipv6.conf.lo.disable_ipv6', value: '1' }
+    - { setting: 'net.ipv6.conf.eth0.disable_ipv6', value: '1'}
+  tags:
+    - create
+    - debug
+    - install_kib
+
+- name: Stop and disable firewalld
+  service:
+    name: firewalld
+    state: stopped
+    enabled: False
+  tags:
+    - create
+    - debug
+    - install_kib
+
+- name: Install kibana package
+  ansible.builtin.yum:
+    name: '{{tmp_dir}}/kibana.rpm'
+    state: present
+  register: install_out
+  tags: 
+    - create
+    - install_kib
+    - debug
+
+- name: Print installer output
+  ansible.builtin.debug:
+    msg: "{{ install_out }}.split('\n') }}"
+  tags: 
+    - create
+    - debug
+    - install_kib
+    - remove_kib
+
+- name: Deploy Kibana Configuration File
+  ansible.builtin.template:
+    backup: true
+    src: 'kibana.yml.j2'
+    dest: '/etc/kibana/kibana.yml'
+  tags: 
+    - create
+    - install_kib
+    - deploy_template
+
+- name: Print enrollment token
+  ansible.builtin.debug:
+    msg: "{{ cluster_token }}"
+  tags: 
+    - create
+    - install_kib
+
+- name: Enable kibana
+  ansible.builtin.systemd:
+    enabled: true
+    name: kibana.service
+  tags:
+    - create
+    - install_kib
+
+- name: Start kibana
+  ansible.builtin.systemd:
+    state: started
+    name: kibana.service
+  tags:
+    - create
+    - install_kib
