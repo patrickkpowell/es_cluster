@@ -1,0 +1,18 @@
+---
+# tasks file for update_template
+- name: Wait for SSH
+  ansible.builtin.wait_for_connection:
+  tags: 
+    - create
+
+- name: Upgrade all packages
+  ansible.builtin.yum:
+    name: '*'
+    state: latest
+  tags: 
+    - create
+
+- name: Shut down Template
+  community.general.shutdown:
+  tags: 
+    - create

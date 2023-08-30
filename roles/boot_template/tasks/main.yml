@@ -1,0 +1,18 @@
+---
+# tasks file for boot_template
+- name: Start Template
+  community.general.proxmox_kvm:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{vm_template}}'
+    node: '{{pve_node}}'
+    state: 'started'
+  tags:
+    - delpoy_vms
+    - create
+
+- name: Wait for SSH
+  ansible.builtin.wait_for_connection:
+    tags: 
+    - create
