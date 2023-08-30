@@ -1,0 +1,25 @@
+---
+# tasks file for roles/create_cluster_token
+- name: Create kibana user and get password
+  ansible.builtin.shell:
+    cmd: "/usr/share/elasticsearch/bin/elasticsearch-reset-password -u {{kib_user}} -ab | awk -F': ' '{print $2}'"
+  register: kib_password
+  tags:
+    - create
+
+- name: Print kibana password
+  ansible.builtin.debug:
+    msg: '{{kib_password.stdout}}'
+  tags: 
+    - debug
+
+- name: Export password
+  set_fact:
+    kib_password: '{{kib_password}}'
+  delegate_facts: true
+  delegate_to: '{{item}}'
+  with_items:
+    - "{{groups['kibnodes']}}"
+  tags:
+    - create
+

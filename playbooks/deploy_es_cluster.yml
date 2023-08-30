@@ -45,7 +45,7 @@
   become_user: root
   gather_facts: false
   roles:
-    - roles/create_cluster_token
+    - roles/manage_access
   tags:
     - deploy_kibana
 

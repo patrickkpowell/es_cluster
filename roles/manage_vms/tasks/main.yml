@@ -70,7 +70,7 @@
   tags:
     - delpoy_vms
 
-- name: Remove exiting template nic
+- name: Remove existing template nic
   community.general.proxmox_nic:
     api_user: '{{api_user}}'
     api_password: '{{api_pass}}'

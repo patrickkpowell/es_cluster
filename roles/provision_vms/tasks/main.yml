@@ -19,7 +19,7 @@
     filter: status
   register: result
   until: "result.cloud_init_data_facts.status.v1.stage is defined and not result.cloud_init_data_facts.status.v1.stage"
-  retries: 50
+  retries: 1000
   delay: 5
   delegate_to: '{{item}}'
   with_items:

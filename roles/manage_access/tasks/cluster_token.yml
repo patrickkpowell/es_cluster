@@ -1,0 +1,28 @@
+---
+# tasks file for roles/create_cluster_token
+- name: Create enrollment token on first host
+  ansible.builtin.command:
+    cmd: "/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana"
+  register: cluster_token
+  tags:
+    - create
+    - debug
+
+- name: Print cluster token
+  ansible.builtin.debug:
+    msg: '{{cluster_token.stdout}}'
+  tags: 
+    - create
+    - debug
+
+- name: Export token
+  set_fact:
+    cluster_token: '{{cluster_token}}'
+  delegate_facts: true
+  delegate_to: '{{item}}'
+  with_items:
+    - "{{groups['all']}}"
+  tags:
+    - create
+    - debug
+

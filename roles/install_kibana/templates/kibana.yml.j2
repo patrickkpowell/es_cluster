@@ -52,13 +52,13 @@ elasticsearch.hosts:
 # the username and password that the Kibana server uses to perform maintenance on the Kibana
 # index at startup. Your Kibana users still need to authenticate with Elasticsearch, which
 # is proxied through the Kibana server.
-#elasticsearch.username: "kibana_system"
-#elasticsearch.password: "kibana"
+elasticsearch.username: "{{ kib_user }}"
+elasticsearch.password: "{{ kib_password.stdout_lines[1] }}"
 
 # Kibana can also authenticate to Elasticsearch via "service account tokens".
 # Service account tokens are Bearer style tokens that replace the traditional username/password based configuration.
 # Use this token instead of a username/password.
-elasticsearch.serviceAccountToken: "{{ cluster_token.stdout }}"
+#elasticsearch.serviceAccountToken: ""
 
 # Time in milliseconds to wait for Elasticsearch to respond to pings. Defaults to the value of
 # the elasticsearch.requestTimeout setting.
@@ -99,7 +99,7 @@ elasticsearch.serviceAccountToken: "{{ cluster_token.stdout }}"
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 #elasticsearch.ssl.verificationMode: full
-
+elasticsearch.ssl.verificationMode: none
 # =================== System: Logging ===================
 # Set the value of this setting to off to suppress all logging output, or to debug to log everything. Defaults to 'info'
 #logging.root.level: debug
