@@ -25,6 +25,7 @@
   with_items:
     - "{{groups['esnodes']}}"
     - "{{groups['esmaster']}}"
+    - "{{groups['kibnodes']}}"
   tags:
     - create
     - provision_vms
@@ -66,7 +67,7 @@
 - name: check to see if we need a reboot
   command: needs-restarting -r
   register: needs_restart
-  ignore_errors: yes
+  ignore_errors: true
   tags:
     - create
     - debug

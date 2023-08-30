@@ -156,3 +156,10 @@
   tags:
     - create
     - install_kib
+
+- name: Print enrollment token
+  ansible.builtin.debug:
+    msg: "{{ elasticpass.stdout }}"
+  tags: 
+    - create
+    - install_kib
