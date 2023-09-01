@@ -72,7 +72,7 @@ network.host: 0.0.0.0
 #discovery.seed_hosts: ["host1", "host2"]
 discovery.seed_hosts:
   {% for host in groups['esservers'] %}
-  - {{host}}
+  - {{ host }}
   {% endfor %}
 #
 # Bootstrap the cluster using an initial set of master-eligible nodes:
@@ -109,11 +109,11 @@ xpack.security.transport.ssl:
   enabled: true
   #verification_mode: none
   verification_mode: certificate
-  keystore.path: certs/{{cluster_name}}_certs.p12
-  truststore.path: certs/{{cluster_name}}_certs.p12
+  keystore.path: certs/{{ inventory_hostname }}/{{ inventory_hostname }}.p12
+  truststore.path: certs/{{ inventory_hostname }}/{{ inventory_hostname }}.p12
 # Create a new cluster with the current node only
 # Additional nodes can still join the cluster later
-cluster.initial_master_nodes: {{groups["esmaster"]}}
+cluster.initial_master_nodes: {{ groups["esmaster"] }}
 
 # Allow HTTP API connections from anywhere
 # Connections are encrypted and require user authentication
@@ -124,9 +124,3 @@ http.host: 0.0.0.0
 #transport.host: 0.0.0.0
 
 #----------------------- END SECURITY AUTO CONFIGURATION -------------------------
-#discovery.seed_hosts:
-#   - es01.powellcompanies.com
-#   - es02.powellcompanies.com
-#   - es03.powellcompanies.com
-#network.host: 0.0.0.0
-#cluster.name: pcluster

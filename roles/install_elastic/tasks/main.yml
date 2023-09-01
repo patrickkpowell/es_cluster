@@ -135,13 +135,14 @@
 
 - name: "Create certificate authority on the master node"
   ansible.builtin.shell:
-    cmd: echo $"{{TLS_Pass}}\n" | /usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --out /etc/elasticsearch/certs/{{cluster_name}}_ca.p12
+    cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --out /etc/elasticsearch/certs/{{cluster_name}}_ca.p12 --pass {{TLS_Pass}}"
     creates: "/etc/elasticsearch/certs/{{cluster_name}}_ca.p12"
   when: inventory_hostname in groups['esmaster']
   tags:
     - create
     - install_es
     - debug
+    - create_ca
 
 - name: "Deploy instances.yml template"
   ansible.builtin.template:
@@ -155,12 +156,13 @@
     - create
     - install_es
     - debug
+    - deploy_instances
 
 - name: "Create certificates for the cluster"
   ansible.builtin.shell:
-    cmd: yes | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --ca /etc/elasticsearch/certs/{{cluster_name}}_ca.p12 --pass {{TLS_Pass}} --in /etc/elasticsearch/certs/instances.yml --out /etc/elasticsearch/certs/{{cluster_name}}_certs.p12
-    # cmd: echo $"{{TLS_Pass}}" | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --ca /etc/elasticsearch/certs/{{cluster_name}}_ca.p12 --in /etc/elasticsearch/certs/instances.yml --out /etc/elasticsearch/certs/{{cluster_name}}_certs.p12
-    creates: "/etc/elasticsearch/certs/{{cluster_name}}_certs.p12"
+    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --in /etc/elasticsearch/certs/instances.yml --ca /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 --out /etc/elasticsearch/certs/{{ cluster_name }}_certs.zip --pass {{ TLS_Pass }}"
+    # cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --in /etc/elasticsearch/certs/instances.yml --ca /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 --out /etc/elasticsearch/certs/{{ cluster_name }}_certs.zip --pass {{ TLS_Pass }}"
+    creates: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
   when: inventory_hostname in groups['esmaster']
   tags:
     - create
@@ -169,8 +171,8 @@
 
 - name: "Fetch cluster certificates file"
   ansible.builtin.fetch:
-    src: "/etc/elasticsearch/certs/{{cluster_name}}_certs.p12"
-    dest: "{{tmp_dir}}/{{cluster_name}}_certs.p12"
+    src: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
+    dest: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"
     flat: true
   when: inventory_hostname in groups['esmaster']
   tags:
@@ -180,8 +182,8 @@
 
 - name: "Push certs to nodes"
   ansible.builtin.copy:
-    src: "{{tmp_dir}}/{{cluster_name}}_certs.p12"
-    dest: "/etc/elasticsearch/certs/{{cluster_name}}_certs.p12"
+    src: "{{ tmp_dir }}{{ cluster_name }}_certs.zip"
+    dest: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
     owner: "root"
     group: "elasticsearch"
     mode: "0660"
@@ -190,9 +192,27 @@
     - install_es
     - debug
 
+- name: "Unzip cluster certificates file"
+  ansible.builtin.unarchive:
+    src: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
+    dest: "/etc/elasticsearch/certs/"
+    remote_src: true
+  tags:
+    - create
+    - install_es
+    - debug
+
 - name: "Store the password in the Elasticsearch keystore"
   ansible.builtin.shell:
-    cmd: "yes | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password"
+    cmd: "echo {{ TLS_Pass }}  | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password -f"
+  tags:
+    - create
+    - install_es
+    - debug
+
+- name: "Store the password in the Elasticsearch truststore"
+  ansible.builtin.shell:
+    cmd: "echo {{ TLS_Pass }}  | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password -f"
   tags:
     - create
     - install_es

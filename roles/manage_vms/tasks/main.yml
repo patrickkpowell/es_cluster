@@ -24,18 +24,18 @@
 
 - name: "Deploy kib servers"
   community.general.proxmox_kvm:
-    api_user: "{{api_user}}"
-    api_password: "{{api_pass}}"
-    api_host: "{{api_host}}"
+    api_user: "{{ api_user }}"
+    api_password: "{{ api_pass }}"
+    api_host: "{{ api_host }}"
     clone: "blah"
-    vmid: "{{kib_template_id}}"
-    name: "{{item.name}}"
-    node: "{{vm_node}}"
-    memory: "{{vm_memory}}"
+    vmid: "{{ kib_template_id }}"
+    name: "{{ item.name }}"
+    node: "{{ vm_node }}"
+    memory: "{{ vm_memory }}"
     timeout: 60
     state: "present"
   loop:
-    "{{vms}}"
+    "{{ vms }}"
   when: item.type == 'kib'
   tags:
     - delpoy_vms
@@ -43,15 +43,15 @@
 
 - name: Shutdown Proxmox VM's
   community.general.proxmox_kvm:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{item.name}}'
-    node: '{{vm_node}}'
+    api_user: '{{ api_user }}'
+    api_password: '{{ api_pass }}'
+    api_host: '{{ api_host }}'
+    name: '{{ item.name }}'
+    node: '{{ vm_node }}'
     state: 'stopped'
     timeout: 60
   loop:
-    "{{vms}}"
+    "{{ vms }}"
   tags:
     - destroy
     - shutdown
@@ -65,47 +65,43 @@
 
 - name: Destroy Proxmox VM's
   community.general.proxmox_kvm:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{item.name}}'
-    node: '{{vm_node}}'
+    api_user: '{{ api_user }}'
+    api_password: '{{ api_pass }}'
+    api_host: '{{ api_host }}'
+    name: '{{ item.name }}'
+    node: '{{ vm_node }}'
     state: 'absent'
   loop:
-    "{{vms}}"
+    "{{ vms }}"
   tags:
     - destroy
 
 - name: Get Facts
   community.general.proxmox_kvm:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    node: '{{vm_node}}'
-    name: '{{item.name}}'
-    validate_certs: no
+    api_user: '{{ api_user }}'
+    api_password: '{{ api_pass }}'
+    api_host: '{{ api_host }}'
+    node: '{{ vm_node }}'
+    name: '{{ item.name }}'
+    validate_certs: false
     state: current
   loop:
-    "{{vms}}"
+    "{{ vms }}"
   register: hostinfo
   tags:
     - delpoy_vms
     - create
 
-- debug: msg="{{ hostinfo.results[0].item.mac }}"
-  tags:
-    - delpoy_vms
-
 - name: Remove existing template nic
   community.general.proxmox_nic:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{item.name}}'
-    interface: '{{item.interface}}'
+    api_user: '{{ api_user }}'
+    api_password: '{{ api_pass }}'
+    api_host: '{{ api_host }}'
+    name: '{{ item.name }}'
+    interface: '{{ item.interface }}'
     state: 'absent'
   loop:
-    "{{vms}}"
+    "{{ vms }}"
   when:
     item.mac not in item.mac
   tags:
@@ -114,26 +110,26 @@
 
 - name: Replace interface with predefined MAC
   community.general.proxmox_nic:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{item.name}}'
-    interface: '{{item.interface}}'
-    bridge: '{{item.bridge}}'
-    mac: '{{item.mac}}'
+    api_user: '{{ api_user }}'
+    api_password: '{{ api_pass }}'
+    api_host: '{{ api_host }}'
+    name: '{{ item.name }}'
+    interface: '{{ item.interface }}'
+    bridge: '{{ item.bridge }}'
+    mac: '{{ item.mac }}'
     state: 'present'
   loop:
-    "{{vms}}"
+    "{{ vms }}"
   tags:
     - create
     - delpoy_vms
 
 - name: Add data disks to es nodes (Do not overwrite if it already exists)
   community.general.proxmox_disk:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{item.name}}'
+    api_user: '{{ api_user }}'
+    api_password: '{{ api_pass }}'
+    api_host: '{{ api_host }}'
+    name: '{{ item.name }}'
     disk: scsi3
     backup: true
     cache: none
@@ -141,18 +137,18 @@
     size: 30
     state: present
   loop:
-    "{{vms}}"
+    "{{ vms }}"
 
 - name: Power on VM's
   community.general.proxmox_kvm:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{item.name}}'
-    node: '{{vm_node}}'
+    api_user: '{{ api_user }}'
+    api_password: '{{ api_pass }}'
+    api_host: '{{ api_host }}'
+    name: '{{ item.name }}'
+    node: '{{ vm_node }}'
     state: 'started'
   loop:
-    "{{vms}}"
+    "{{ vms }}"
   tags:
     - create
     - delpoy_vms

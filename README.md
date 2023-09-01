@@ -12,7 +12,8 @@ Set of roles to deploy an Elasticsearch cluster on Proxmox.
 ~~[ERROR][elasticsearch-service] Unable to retrieve version information from Elasticsearch nodes. self signed certificate in certificate chain~~
 ~~```~~
 
-Generate CA & certificates.
+~~Generate CA & certificates.~~
+
 
 TODO:
 
@@ -23,6 +24,8 @@ Set selinux rules
 ~~Jinja2 template for elasticsearch.yml~~
 
 Jinja2 template for JVM Options
+
+Clean up generated certificates after install so they don't interfiere with subsequent playbook runs
 
 Requirements
 ------------
