@@ -5,7 +5,19 @@
     api_user: '{{api_user}}'
     api_password: '{{api_pass}}'
     api_host: '{{api_host}}'
-    name: '{{vm_template}}'
+    name: '{{es_template}}'
+    node: '{{pve_node}}'
+    state: 'started'
+  tags:
+    - delpoy_vms
+    - create
+
+- name: Start Template
+  community.general.proxmox_kvm:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{kib_template}}'
     node: '{{pve_node}}'
     state: 'started'
   tags:

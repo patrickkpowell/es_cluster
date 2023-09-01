@@ -5,8 +5,6 @@
 - name: Print hostnames
   ansible.builtin.debug:
     msg: '{{ ansible_ssh_host | default(inventory_hostname) }}'
-  tags: 
-    - debug
 
 - name: Wait for connection
   ansible.builtin.wait_for_connection:
@@ -55,13 +53,11 @@
   tags:
     - create
     - provision_vms
-    - debug
 
 - name: Print se_changed
   ansible.builtin.debug:
     msg: '{{ se_changed.reboot_required }}'
   tags: 
-    - debug
     - create
 
 - name: check to see if we need a reboot
@@ -70,14 +66,12 @@
   ignore_errors: true
   tags:
     - create
-    - debug
 
 - name: display result
   debug:
     var: needs_restart.rc
   tags:
     - create
-    - debug
 
 - name: Reboot Server if Necessary
   command: shutdown -r now "Ansible Updates Triggered"
@@ -87,10 +81,8 @@
   when: (needs_restart.rc == 1) or (se_changed.reboot_required)
   tags:
     - create
-    - debug
 
 - name: Wait for connection
   ansible.builtin.wait_for_connection:
-  tags: 
-    - debug
+  tags:
     - create

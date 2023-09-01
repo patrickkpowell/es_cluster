@@ -10,6 +10,7 @@
     name: '{{item.name}}'
     node: '{{vm_node}}'
     memory: '{{vm_memory}}'
+    timeout: 60
     state: 'present'
   loop:
     "{{vms}}"
@@ -25,11 +26,13 @@
     name: '{{item.name}}'
     node: '{{vm_node}}'
     state: 'stopped'
+    timeout: 60
   loop:
     "{{vms}}"
   tags:
     - destroy
     - shutdown
+  ignore_errors: true
 
 - name: Sleep for 300 seconds and continue with play
   ansible.builtin.wait_for:
@@ -101,6 +104,21 @@
   tags:
     - create
     - delpoy_vms
+
+- name: Add data disks to es nodes (Do not overwrite if it already exists)
+  community.general.proxmox_disk:
+    api_user: '{{api_user}}'
+    api_password: '{{api_pass}}'
+    api_host: '{{api_host}}'
+    name: '{{item.name}}'
+    disk: scsi3
+    backup: true
+    cache: none
+    storage: local-lvm
+    size: 30
+    state: present
+  loop:
+    "{{vms}}"
 
 - name: Power on VM's
   community.general.proxmox_kvm:

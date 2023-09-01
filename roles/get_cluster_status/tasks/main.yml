@@ -6,7 +6,6 @@
   register: elasticpass
   tags:
     - create
-    - debug
     - install_es
     - status
 
@@ -19,14 +18,12 @@
     - "{{groups['all']}}"
   tags:
     - create
-    - debug
 
 - name: Print new elastic password
   ansible.builtin.debug:
     msg: "{{ elasticpass.stdout }}"
   tags: 
     - create
-    - debug
     - install_es
     - status
 
@@ -42,7 +39,6 @@
     - "{{groups['esmaster']}}"
   tags: 
     - create
-    - debug
     - install_es
     - status
 
@@ -51,6 +47,5 @@
     msg: "{{ response }}"
   tags: 
     - create
-    - debug
     - install_es
     - status

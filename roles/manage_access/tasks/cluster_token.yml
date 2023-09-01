@@ -6,14 +6,12 @@
   register: cluster_token
   tags:
     - create
-    - debug
 
 - name: Print cluster token
   ansible.builtin.debug:
     msg: '{{cluster_token.stdout}}'
   tags: 
     - create
-    - debug
 
 - name: Export token
   set_fact:
@@ -24,5 +22,4 @@
     - "{{groups['all']}}"
   tags:
     - create
-    - debug
 

@@ -61,8 +61,6 @@
   gather_facts: false
   roles:
     - roles/manage_access
-  tags:
-    - deploy_kibana
 
 - name: Install Kibana
   hosts: 
@@ -73,5 +71,3 @@
   gather_facts: false
   roles:
     - roles/install_kibana
-  tags:
-    - deploy_kibana

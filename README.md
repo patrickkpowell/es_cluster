@@ -20,7 +20,7 @@ Set Firewall Rules
 
 Set selinux rules
 
-Jinja2 template for elasticsearch.yml
+~~Jinja2 template for elasticsearch.yml~~
 
 Requirements
 ------------
@@ -67,6 +67,9 @@ Reccomend to override variables with group_vars although this can be taylored to
     - {name: 'es01.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:55'}
     - {name: 'es02.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:56'}
     - {name: 'es03.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:57'}
+  kib_user: "kibana"
+  cluster_name: "cluster_name"
+  tmp_dir: "temp/directory/for/roles" 
 ```
 
 ### roles/provision_vms

@@ -1,0 +1,6 @@
+instances:
+{% for host in groups['esservers'] %}
+  - name: "{{host}}"
+    dns: 
+      - "{{host}}"
+{% endfor %}

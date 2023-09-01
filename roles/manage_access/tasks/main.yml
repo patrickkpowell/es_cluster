@@ -10,8 +10,6 @@
 - name: Print kibana password
   ansible.builtin.debug:
     msg: '{{kib_password.stdout}}'
-  tags: 
-    - debug
 
 - name: Export password
   set_fact:

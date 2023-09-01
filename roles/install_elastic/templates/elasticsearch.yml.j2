@@ -107,12 +107,13 @@ xpack.security.http.ssl:
 # Enable encryption and mutual authentication between cluster nodes
 xpack.security.transport.ssl:
   enabled: true
-  verification_mode: none
-  keystore.path: certs/transport.p12
-  truststore.path: certs/transport.p12
+  #verification_mode: none
+  verification_mode: certificate
+  keystore.path: certs/{{cluster_name}}_certs.p12
+  truststore.path: certs/{{cluster_name}}_certs.p12
 # Create a new cluster with the current node only
 # Additional nodes can still join the cluster later
-cluster.initial_master_nodes: ["es01.powellcompanies.com"]
+cluster.initial_master_nodes: {{groups["esmaster"]}}
 
 # Allow HTTP API connections from anywhere
 # Connections are encrypted and require user authentication

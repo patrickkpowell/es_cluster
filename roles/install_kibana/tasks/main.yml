@@ -14,7 +14,6 @@
     msg: 'Downloading from: >{{kib_installer_url}}< To: >{{tmp_dir}}/kibana.rpm<'
   tags: 
     - create
-    - debug
 
 - name: Check if file has already been downloaded
   ansible.builtin.stat:
@@ -34,7 +33,6 @@
   tags: 
     - create
     - install_kib
-    - debug
 
 - name: Download sha512
   ansible.builtin.get_url:
@@ -53,7 +51,6 @@
   register: file_stat
   tags: 
     - create
-    - debug
     - install_kib
 
 - name: Register file hash
@@ -62,14 +59,11 @@
   register: file_hash
   tags:
     - create
-    - debug
     - install_kib
 
 - name: Print hashes
   ansible.builtin.debug:
     msg: 'File Contents: >{{file_hash.stdout}}< File Hash >{{file_stat.stat.checksum}}<'
-  tags: 
-    - debug
 
 - name: Verify sha256sum of download before execution.
   fail:
@@ -77,7 +71,6 @@
   when: file_stat.stat.checksum != file_hash.stdout
   tags:
     - create
-    - debug
     - install_kib
 
 - name: Disable IPV6
@@ -92,7 +85,6 @@
     - { setting: 'net.ipv6.conf.eth0.disable_ipv6', value: '1'}
   tags:
     - create
-    - debug
     - install_kib
 
 - name: Stop and disable firewalld
@@ -102,7 +94,6 @@
     enabled: False
   tags:
     - create
-    - debug
     - install_kib
 
 - name: Install kibana package
@@ -113,14 +104,12 @@
   tags: 
     - create
     - install_kib
-    - debug
 
 - name: Print installer output
   ansible.builtin.debug:
     msg: "{{ install_out }}.split('\n') }}"
   tags: 
     - create
-    - debug
     - install_kib
     - remove_kib
 
