@@ -22,6 +22,8 @@ Set selinux rules
 
 ~~Jinja2 template for elasticsearch.yml~~
 
+Jinja2 template for JVM Options
+
 Requirements
 ------------
 To deploy from a Proxmox server you will need the community.general.proxmox_* ansible modules
