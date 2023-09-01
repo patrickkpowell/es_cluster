@@ -4,15 +4,15 @@ Deploy an Elasticsearch cluster
 Set of roles to deploy an Elasticsearch cluster on Proxmox.
 
 ### Status
-Elasticsearch nodes work.  Optimization needed.
+~~Elasticsearch nodes work.  Optimization needed.~~
 
-Working on kibana installation role.  Currently getting this error.
+~~Working on kibana installation role.  Currently getting this error.~~
 
-```
-[ERROR][elasticsearch-service] Unable to retrieve version information from Elasticsearch nodes. self signed certificate in certificate chain
-```
+~~```~~
+~~[ERROR][elasticsearch-service] Unable to retrieve version information from Elasticsearch nodes. self signed certificate in certificate chain~~
+~~```~~
 
-Possibly an openssl role to generate certificates from the same CA and ditribute via ansible.
+Generate CA & certificates.
 
 TODO:
 
@@ -56,6 +56,8 @@ Reccomend to override variables with group_vars although this can be taylored to
     Proxmox host to contact - Generate this with "ansible-vault encrypt_string '<node name>' --name 'vm_node'"
   api_host: 
     Proxmox API host - Generate this with "ansible-vault encrypt_string '<host name>' --name 'api_host'"
+  TLS_Pass:
+    PKCS12 certificate password - Generate this with "ansible-vault encrypt_string '<password>' --name 'TLS_Pass'"
   vm_template: 
     'Proxmox template or VM to deploy from' These role were built using CentOS and would have to be extended to use another package manager
   vm_cores: 

@@ -23,7 +23,8 @@
   vm_memory: '4096'
   vm_disk_size: '20G'
   template_id: '1002'
-  vms: # VM's to deploy
-    - {name: 'es01.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:55'}
-    - {name: 'es02.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:56'}
-    - {name: 'es03.domain.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:57'}
+  vms:
+    - {name: 'es01.powellcompanies.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:55', esnode: es01, type: es}
+    - {name: 'es02.powellcompanies.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:56', esnode: es02, type: es}
+    - {name: 'es03.powellcompanies.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:57', esnode: es03, type: es}
+    - {name: 'kib01.powellcompanies.com', interface: 'net0', nic: 'virtio', bridge: 'vmbr0', mac: '00:11:22:33:44:58', esnode: kib01, type: kib}

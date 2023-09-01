@@ -135,7 +135,7 @@
 
 - name: "Create certificate authority on the master node"
   ansible.builtin.shell:
-    cmd: echo $"{{TLS_pass}}" | /usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --out /etc/elasticsearch/certs/{{cluster_name}}_ca.p12
+    cmd: echo $"{{TLS_Pass}}\n" | /usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --out /etc/elasticsearch/certs/{{cluster_name}}_ca.p12
     creates: "/etc/elasticsearch/certs/{{cluster_name}}_ca.p12"
   when: inventory_hostname in groups['esmaster']
   tags:
@@ -158,7 +158,8 @@
 
 - name: "Create certificates for the cluster"
   ansible.builtin.shell:
-    cmd: echo $"{{TLS_pass}}" | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --ca /etc/elasticsearch/certs/{{cluster_name}}_ca.p12 --pass "" --in /etc/elasticsearch/certs/instances.yml --out /etc/elasticsearch/certs/{{cluster_name}}_certs.p12
+    cmd: yes | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --ca /etc/elasticsearch/certs/{{cluster_name}}_ca.p12 --pass {{TLS_Pass}} --in /etc/elasticsearch/certs/instances.yml --out /etc/elasticsearch/certs/{{cluster_name}}_certs.p12
+    # cmd: echo $"{{TLS_Pass}}" | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --ca /etc/elasticsearch/certs/{{cluster_name}}_ca.p12 --in /etc/elasticsearch/certs/instances.yml --out /etc/elasticsearch/certs/{{cluster_name}}_certs.p12
     creates: "/etc/elasticsearch/certs/{{cluster_name}}_certs.p12"
   when: inventory_hostname in groups['esmaster']
   tags:

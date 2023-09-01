@@ -1,19 +1,42 @@
 ---
+
 # tasks file for roles/deploy_vms
-- name: Deploy Proxmox VM's
+
+# - name: "Deploy es servers"
+- name: "Deploy es servers"
   community.general.proxmox_kvm:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    clone: 'blah'
-    vmid: '{{template_id}}'
-    name: '{{item.name}}'
-    node: '{{vm_node}}'
-    memory: '{{vm_memory}}'
+    api_user: "{{api_user}}"
+    api_password: "{{api_pass}}"
+    api_host: "{{api_host}}"
+    clone: "blah"
+    vmid: "{{es_template_id}}"
+    name: "{{item.name}}"
+    node: "{{vm_node}}"
+    memory: "{{vm_memory}}"
     timeout: 60
-    state: 'present'
+    state: "present"
   loop:
     "{{vms}}"
+  when: item.type == 'es'
+  tags:
+    - delpoy_vms
+    - create
+
+- name: "Deploy kib servers"
+  community.general.proxmox_kvm:
+    api_user: "{{api_user}}"
+    api_password: "{{api_pass}}"
+    api_host: "{{api_host}}"
+    clone: "blah"
+    vmid: "{{kib_template_id}}"
+    name: "{{item.name}}"
+    node: "{{vm_node}}"
+    memory: "{{vm_memory}}"
+    timeout: 60
+    state: "present"
+  loop:
+    "{{vms}}"
+  when: item.type == 'kib'
   tags:
     - delpoy_vms
     - create
