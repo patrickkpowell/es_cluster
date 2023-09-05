@@ -6,6 +6,7 @@
   register: kib_password
   tags:
     - create
+    - debug
 
 - name: Print kibana password
   ansible.builtin.debug:
@@ -20,4 +21,6 @@
     - "{{groups['kibnodes']}}"
   tags:
     - create
+    - debug
+    
 

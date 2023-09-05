@@ -122,6 +122,7 @@
     - create
     - install_kib
     - deploy_template
+    - debug
 
 - name: Print enrollment token
   ansible.builtin.debug:
@@ -129,6 +130,81 @@
   tags: 
     - create
     - install_kib
+    - debug
+
+- name: "Create certs directory"
+  ansible.builtin.file:
+    path: "/etc/kibana/certs"
+    state: directory
+    owner: "root"
+    group: "kibana"
+    mode: "0770"
+  tags:
+    - create
+    - install_kib
+    - debug
+
+- name: "Push certs to nodes"
+  ansible.builtin.copy:
+    src: "{{ tmp_dir }}{{ cluster_name }}_certs.zip"
+    dest: "/etc/kibana/certs/{{ cluster_name }}_certs.zip"
+    owner: "root"
+    group: "kibana"
+    mode: "0660"
+  tags:
+    - create
+    - install_es
+    - debug
+
+- name: "Unzip cluster certificates file"
+  ansible.builtin.unarchive:
+    src: "/etc/kibana/certs/{{ cluster_name }}_certs.zip"
+    dest: "/etc/kibana/certs/"
+    remote_src: true
+  tags:
+    - create
+    - install_es
+    - debug
+
+- name: "Generate key file"
+  ansible.builtin.shell:
+    cmd: "openssl pkcs12 -info -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -nodes -nocerts -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    creates: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+  tags:
+    - create
+    - install_kib
+    - debug
+
+- name: "Set permissions on key file"
+  ansible.builtin.file:
+    path: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    owner: "root"
+    group: "kibana"
+    mode: "0660"
+  tags:
+    - create
+    - install_kib
+    - debug
+
+- name: "Generate .pem file"
+  ansible.builtin.shell:
+    cmd: "openssl pkcs12 -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
+    creates: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
+  tags:
+    - create
+    - install_kib
+    - debug
+
+- name: "Set permissions on .pem file"
+  ansible.builtin.file:
+    path: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
+    owner: "root"
+    group: "kibana"
+    mode: "0660"
+  tags:
+    - create
+    - install_kib
+    - debug
 
 - name: Enable kibana
   ansible.builtin.systemd:
@@ -137,6 +213,7 @@
   tags:
     - create
     - install_kib
+    - debug
 
 - name: Start kibana
   ansible.builtin.systemd:
@@ -145,6 +222,7 @@
   tags:
     - create
     - install_kib
+    - debug
 
 - name: Print enrollment token
   ansible.builtin.debug:

@@ -239,9 +239,9 @@
 
 - name: "Start elasticsearch"
   ansible.builtin.systemd:
-    state: reloaded
+    state: restarted
     name: elasticsearch.service
   tags:
     - create
     - install_es
-    - debug
+

@@ -1,17 +1,17 @@
-- name: "Boot Template"
-  hosts: proxmox
-  gather_facts: false
-  roles:
-    - roles/boot_template
+#- name: "Boot Template"
+#  hosts: proxmox
+#  gather_facts: false
+#  roles:
+#    - roles/boot_template
  
-- name: Update Template and shut back down
-  hosts: templates
-  become: yes
-  become_method: sudo
-  become_user: root
-  gather_facts: false
-  roles:
-    - roles/update_template
+#- name: Update Template and shut back down
+#  hosts: templates
+#  become: yes
+#  become_method: sudo
+#  become_user: root
+#  gather_facts: false
+#  roles:
+#    - roles/update_template
 
 - name: Create a Proxmox VM's
   hosts: proxmox
@@ -68,6 +68,6 @@
   become: yes
   become_method: sudo
   become_user: root
-  gather_facts: false
+  gather_facts: true
   roles:
     - roles/install_kibana

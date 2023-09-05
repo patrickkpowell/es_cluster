@@ -108,7 +108,8 @@ xpack.security.http.ssl:
 xpack.security.transport.ssl:
   enabled: true
   #verification_mode: none
-  verification_mode: certificate
+  #verification_mode: certificate
+  verification_mode: full
   keystore.path: certs/{{ inventory_hostname }}/{{ inventory_hostname }}.p12
   truststore.path: certs/{{ inventory_hostname }}/{{ inventory_hostname }}.p12
 # Create a new cluster with the current node only

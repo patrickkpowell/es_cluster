@@ -1,5 +1,5 @@
 instances:
-{% for host in groups['esservers'] %}
+{% for host in groups['sslnodes'] %}
   - name: "{{ host }}"
     dns:
       - "{{ host }}"
