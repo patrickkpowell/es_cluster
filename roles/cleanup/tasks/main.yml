@@ -1,0 +1,12 @@
+---
+# tasks file for roles/cleanup
+
+- name: "Remove locally fetched certificates"
+  ansible.builtin.file:
+    path: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"
+    state: absent
+  delegate_to: localhost
+  tags:
+    - create
+    - install_es
+    - debug

@@ -1,3 +1,9 @@
+- name: Cleanup before we start
+  hosts: esmaster
+  gather_facts: false
+  roles:
+    - roles/cleanup
+
 #- name: "Boot Template"
 #  hosts: proxmox
 #  gather_facts: false
@@ -71,3 +77,9 @@
   gather_facts: true
   roles:
     - roles/install_kibana
+
+- name: Cleanup when we're done
+  hosts: esmaster
+  gather_facts: false
+  roles:
+    - roles/cleanup

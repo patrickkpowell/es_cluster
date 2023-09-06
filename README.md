@@ -50,7 +50,7 @@ Reccomend to override variables with group_vars although this can be taylored to
 
 ```
   api_user:
-    Proxmox API username - Generate this with "ansible-vault encrypt_string '<api password>' --name
+    Proxmox API username - Generate this with "ansible-vault encrypt_string '<api password>' --name 'api_user'
   api_pass:
     Proxmox API password - Generate this with "ansible-vault encrypt_string '<api password>' --name 'api_pass'"
   api_port:
