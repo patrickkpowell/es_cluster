@@ -1,72 +1,72 @@
 ---
 # tasks file for roles/install_kibana
 
-- name: Import kibana rpm key
+- name: "Import kibana rpm key"
   ansible.builtin.rpm_key:
-    state: 'present'
-    key: 'https://artifacts.elastic.co/GPG-KEY-elasticsearch'
+    state: "present"
+    key: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
   tags:
     - create
     - install_kib
 
-- name: Print installer download locations
+- name: "Print installer download locations"
   ansible.builtin.debug:
-    msg: 'Downloading from: >{{kib_installer_url}}< To: >{{tmp_dir}}/kibana.rpm<'
-  tags: 
+    msg: "Downloading from: >{{ kib_installer_url }}< To: >{{ tmp_dir }}/kibana.rpm<"
+  tags:
     - create
 
-- name: Check if file has already been downloaded
+- name: "Check if file has already been downloaded"
   ansible.builtin.stat:
-    path: '{{tmp_dir}}/kibana.rpm'
+    path: "{{ tmp_dir }}/kibana.rpm"
   register: kib_file_exist
-  tags: 
+  tags:
     - create
     - install_kib
 
-- name: Download installer
+- name: "Download installer"
   ansible.builtin.get_url:
-    url: '{{kib_installer_url}}'
-    dest: '{{tmp_dir}}/kibana.rpm'
-    mode: '0440'
+    url: "{{ kib_installer_url }}"
+    dest: "{{ tmp_dir }}/kibana.rpm"
+    mode: "0440"
     validate_certs: false
-  when: kib_file_exist.stat.exists == False
-  tags: 
+  when: kib_file_exist.stat.exists == false
+  tags:
     - create
     - install_kib
 
-- name: Download sha512
+- name: "Download sha512"
   ansible.builtin.get_url:
-    url: '{{kib_installer_sha_url}}'
-    dest: '{{tmp_dir}}/kibana.sha512'
-    mode: '0440'
-  tags: 
+    url: "{{ kib_installer_sha_url }}"
+    dest: "{{ tmp_dir }}/kibana.sha512"
+    mode: "0440"
+  tags:
     - create
     - install_kib
 
-- name: Get sha256 sum of downloaded installer
-  stat:
-    path: '{{tmp_dir}}/kibana.rpm'
-    checksum_algorithm: sha512
-    get_checksum: yes
+- name: "Get sha256 sum of downloaded installer"
+  ansible.builtin.stat:
+    path: "{{ tmp_dir }}/kibana.rpm"
+    checksum_algorithm: "sha512"
+    get_checksum: true
   register: file_stat
-  tags: 
+  tags:
     - create
     - install_kib
 
-- name: Register file hash
+- name: "Register file hash"
   ansible.builtin.shell:
-    cmd: "cat {{tmp_dir}}/kibana.sha512 | awk '{print $1}'"
+    cmd: "cat {{ tmp_dir }}/kibana.sha512 | awk '{print $1}'"
   register: file_hash
   tags:
     - create
     - install_kib
 
-- name: Print hashes
+- name: "Print hashes"
   ansible.builtin.debug:
-    msg: 'File Contents: >{{file_hash.stdout}}< File Hash >{{file_stat.stat.checksum}}<'
+    msg: "File Contents: >{{ file_hash.stdout }}< File Hash >{{ file_stat.stat.checksum }}<"
 
-- name: Verify sha256sum of download before execution.
-  fail:
+- name: "Verify sha256sum of download before execution"
+  ansible.builtin.fail:
     msg: "Failure, file is not correct."
   when: file_stat.stat.checksum != file_hash.stdout
   tags:
@@ -87,49 +87,44 @@
     - create
     - install_kib
 
-- name: Stop and disable firewalld
-  service:
+- name: "Stop and disable firewalld"
+  ansible.builtin.service:
     name: firewalld
     state: stopped
-    enabled: False
+    enabled: false
   tags:
     - create
     - install_kib
 
-- name: Install kibana package
+- name: "Install kibana package"
   ansible.builtin.yum:
-    name: '{{tmp_dir}}/kibana.rpm'
+    name: '{{ tmp_dir }}/kibana.rpm'
     state: present
   register: install_out
-  tags: 
+  tags:
     - create
     - install_kib
 
-- name: Print installer output
+- name: "Print installer output"
   ansible.builtin.debug:
     msg: "{{ install_out }}.split('\n') }}"
-  tags: 
+  tags:
     - create
     - install_kib
     - remove_kib
 
-- name: Deploy Kibana Configuration File
+- name: "Deploy Kibana Configuration File"
   ansible.builtin.template:
     backup: true
-    src: 'kibana.yml.j2'
-    dest: '/etc/kibana/kibana.yml'
-  tags: 
+    src: "kibana.yml.j2"
+    dest: "/etc/kibana/kibana.yml"
+    owner: "root"
+    group: "kibana"
+    mode: "0660"
+  tags:
     - create
     - install_kib
     - deploy_template
-    - debug
-
-- name: Print enrollment token
-  ansible.builtin.debug:
-    msg: "{{ kib_password }}"
-  tags: 
-    - create
-    - install_kib
     - debug
 
 - name: "Create certs directory"
@@ -168,7 +163,8 @@
 
 - name: "Generate key file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -info -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -nodes -nocerts -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    cmd: "openssl pkcs12 -info -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 >
+      -passin pass:{{ TLS_Pass }} -nodes -nocerts -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
     creates: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
   tags:
     - create
@@ -188,7 +184,8 @@
 
 - name: "Generate .pem file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
+    cmd: "openssl pkcs12 -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} >
+      -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
     creates: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
   tags:
     - create
@@ -206,27 +203,27 @@
     - install_kib
     - debug
 
-- name: Enable kibana
+- name: "Enable kibana"
   ansible.builtin.systemd:
     enabled: true
-    name: kibana.service
+    name: "kibana.service"
   tags:
     - create
     - install_kib
     - debug
 
-- name: Start kibana
+- name: "Start kibana"
   ansible.builtin.systemd:
     state: started
-    name: kibana.service
+    name: "kibana.service"
   tags:
     - create
     - install_kib
     - debug
 
-- name: Print enrollment token
-  ansible.builtin.debug:
-    msg: "{{ elasticpass.stdout }}"
-  tags: 
-    - create
-    - install_kib
+#- name: Print enrollment token
+#  ansible.builtin.debug:
+#    msg: "{{ elasticpass.stdout }}"
+#  tags: 
+#    - create
+#    - install_kib

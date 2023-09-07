@@ -48,16 +48,6 @@
   roles:
     - roles/install_elastic
 
-- name: Get Cluster Status
-  hosts: 
-    - esmaster
-  become: yes
-  become_method: sudo
-  become_user: root
-  gather_facts: false
-  roles:
-    - roles/get_cluster_status
-
 - name: Create Cluster Token
   hosts:
     - esmaster
@@ -83,3 +73,13 @@
   gather_facts: false
   roles:
     - roles/cleanup
+
+- name: Get Cluster Status
+  hosts: 
+    - esmaster
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/get_cluster_status

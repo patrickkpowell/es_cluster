@@ -148,7 +148,7 @@
   ansible.builtin.shell:
     cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --pem --out /etc/elasticsearch/certs/{{cluster_name}}_ca.zip --pass {{TLS_Pass}}"
     creates: "/etc/elasticsearch/certs/{{cluster_name}}_ca.zip"
-  when: inventory_hostname in groups['esmaster']
+  when: inventory_hostname in groups['certnode']
   tags:
     - create
     - install_es
@@ -164,7 +164,7 @@
     - create
     - install_es
     - debug
-  when: inventory_hostname in groups['esmaster']
+  when: inventory_hostname in groups['certnode']
 
     
 - name: "Deploy es_instances.yml template"
@@ -174,32 +174,32 @@
     owner: "root"
     group: "elasticsearch"
     mode: "0644"
-  when: inventory_hostname in groups['esmaster']
+  when: inventory_hostname in groups['certnode']
   tags:
     - create
     - install_es
     - deploy_instances
     - debug
 
-#- name: "Deploy kib_instances.yml template"
-#  ansible.builtin.template:
-#    src: "kib_instances.yml.j2"
-#    dest: "/etc/elasticsearch/certs/kib_instances.yml"
-#    owner: "root"
-#    group: "elasticsearch"
-#    mode: "0644"
-#  when: inventory_hostname in groups['esmaster']
-#  tags: 
-#    - create
-#    - install_es
-#    - deploy_instances
-#    - debug
+- name: "Deploy kib_instances.yml template"
+  ansible.builtin.template:
+    src: "kib_instances.yml.j2"
+    dest: "/etc/elasticsearch/certs/kib_instances.yml"
+    owner: "root"
+    group: "elasticsearch"
+    mode: "0644"
+  when: inventory_hostname in groups['certnode']
+  tags: 
+    - create
+    - install_es
+    - deploy_instances
+    - debug
 
 - name: "Create p12 certificates from pem ca"
   ansible.builtin.shell:
     cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert -s --pass {{ TLS_Pass }} --ca-cert /etc/elasticsearch/certs/ca/ca.crt --ca-key /etc/elasticsearch/certs/ca/ca.key --in /etc/elasticsearch/certs/es_instances.yml -out /etc/elasticsearch/certs/{{ cluster_name }}_pkcs_12.zip"
     creates: "/etc/elasticsearch/certs/{{ cluster_name }}_pkcs_12.zip"
-  when: inventory_hostname in groups['esmaster']
+  when: inventory_hostname in groups['certnode']
   tags:
     - create
     - install_es
@@ -207,9 +207,9 @@
 
 - name: "Create pem certificates from pem ca"
   ansible.builtin.shell:
-    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem  --ca-cert /etc/elasticsearch/certs/ca/ca.crt --ca-key /etc/elasticsearch/certs/ca/ca.key --in /etc/elasticsearch/certs/es_instances.yml -out /etc/elasticsearch/certs/{{ cluster_name }}_pem.zip"
+    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem  --ca-cert /etc/elasticsearch/certs/ca/ca.crt --ca-key /etc/elasticsearch/certs/ca/ca.key --in /etc/elasticsearch/certs/es_instances.yml --out /etc/elasticsearch/certs/{{ cluster_name }}_pem.zip"
     creates: "/etc/elasticsearch/certs/{{ cluster_name }}_pem.zip"
-  when: inventory_hostname in groups['esmaster']
+  when: inventory_hostname in groups['certnode']
   tags:
     - create
     - install_es
@@ -219,7 +219,7 @@
   ansible.builtin.shell:
     cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --in /etc/elasticsearch/certs/es_instances.yml --ca-cert /etc/elasticsearch/certs/ca/ca.crt --ca-key /etc/elasticsearch/certs/ca/ca.key --out /etc/elasticsearch/certs/{{ cluster_name }}_certs.zip --pass {{ TLS_Pass }}"
     creates: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
-  when: inventory_hostname in groups['esmaster']
+  when: inventory_hostname in groups['certnode']
   tags:
     - create
     - install_es
@@ -230,7 +230,7 @@
     src: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
     dest: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"
     flat: true
-  when: inventory_hostname in groups['esmaster']
+  when: inventory_hostname in groups['certnode']
   tags:
     - create
     - install_es
