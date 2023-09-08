@@ -7,6 +7,7 @@ instances:
 {% if hostvars[host]['ansible_host'] is defined %}
       - "{{ hostvars[host]['ansible_host'] }}"
 {% else %}
+      - "{{ hostvars[host]['ansible_default_ipv4']['address'] }}"
 {% endif %}
 {% if hostvars[host]['ext_ip'] is defined %}
 {% if hostvars[host]['ext_ip'] != hostvars[host]['ansible_host'] %}

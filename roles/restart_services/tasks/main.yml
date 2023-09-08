@@ -1,0 +1,30 @@
+---
+# tasks file for roles/restart_services
+
+- name: Restart ElasticSearch services
+  ansible.builtin.service:
+    name: "elasticsearch"
+    state: restarted
+  when: inventory_hostname in groups['esservers']
+  tags:
+    - restart_elasticsearch
+
+- name: Restart kibana services
+  ansible.builtin.service:
+    name: "kibana"
+    state: restarted
+  when: inventory_hostname in groups['kibnodes']
+  tags:
+    - restart_kibana
+
+#- name: Stop Kibana services
+#  ansible.builtin.service:
+#    name: "kibana"
+#    state: stopped
+#  when: inventory_hostname in groups['kibnodes']
+#
+#- name: Start Kibana services
+#  ansible.builtin.service:
+#    name: "kibana"
+#    state: started
+#  when: inventory_hostname in groups['kibnodes']

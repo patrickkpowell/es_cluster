@@ -1,5 +1,12 @@
 ---
 # tasks file for get_cluster_status
+
+- name: "Have to get the password to do this which means we have to reset it..."
+  import_tasks: ../reset_pw/tasks/main.yml
+  tags: 
+    - create
+    - status
+
 - name: Check cluster status
   ansible.builtin.uri:
     url: 'https://{{item}}:9200/_cluster/health?pretty=true'
@@ -9,10 +16,9 @@
     validate_certs: false
   register: response
   with_items:
-    - "{{groups['esmaster']}}"
+    - "{{groups['certnode']}}"
   tags: 
     - create
-    - install_es
     - status
 
 - name: Print cluster status
@@ -20,13 +26,4 @@
     msg: "{{ response }}"
   tags: 
     - create
-    - install_es
-    - status
-
-- name: Print new elastic password
-  ansible.builtin.debug:
-    msg: "{{ elasticpass.stdout }}"
-  tags: 
-    - create
-    - install_es
     - status

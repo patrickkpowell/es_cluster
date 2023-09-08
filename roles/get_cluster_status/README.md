@@ -20,7 +20,7 @@ Example Playbook
 
     - name: Get Cluster Status
       hosts: 
-        - esmaster
+        - master_nodes
       become: yes
       become_method: sudo
       become_user: root

@@ -1,23 +1,8 @@
 - name: Cleanup before we start
-  hosts: esmaster
+  hosts: certnode
   gather_facts: false
   roles:
     - roles/cleanup
-
-#- name: "Boot Template"
-#  hosts: proxmox
-#  gather_facts: false
-#  roles:
-#    - roles/boot_template
- 
-#- name: Update Template and shut back down
-#  hosts: templates
-#  become: yes
-#  become_method: sudo
-#  become_user: root
-#  gather_facts: false
-#  roles:
-#    - roles/update_template
 
 - name: Create a Proxmox VM's
   hosts: proxmox
@@ -27,8 +12,8 @@
     
 - name: Provision Proxmox VM's
   hosts: 
-    - esnodes
-    - esmaster
+    - data_nodes
+    - master_nodes
     - kibnodes
   become: yes
   become_method: sudo
@@ -39,8 +24,7 @@
 
 - name: Install Elasticsearch
   hosts: 
-    - esnodes
-    - esmaster
+    - esservers
   become: yes
   become_method: sudo
   become_user: root
@@ -50,7 +34,7 @@
 
 - name: Create Cluster Token
   hosts:
-    - esmaster
+    - master_nodes
   become: yes
   become_method: sudo
   become_user: root
@@ -69,14 +53,14 @@
     - roles/install_kibana
 
 - name: Cleanup when we're done
-  hosts: esmaster
+  hosts: certnode
   gather_facts: false
   roles:
     - roles/cleanup
 
 - name: Get Cluster Status
   hosts: 
-    - esmaster
+    - master_nodes
   become: yes
   become_method: sudo
   become_user: root

@@ -114,7 +114,7 @@ xpack.security.transport.ssl:
   truststore.path: certs/{{ inventory_hostname }}/{{ inventory_hostname }}.p12
 # Create a new cluster with the current node only
 # Additional nodes can still join the cluster later
-cluster.initial_master_nodes: {{ groups["esmaster"] }}
+cluster.initial_master_nodes: {{ groups["master_nodes"] }}
 
 # Allow HTTP API connections from anywhere
 # Connections are encrypted and require user authentication
@@ -125,3 +125,8 @@ http.host: 0.0.0.0
 #transport.host: 0.0.0.0
 
 #----------------------- END SECURITY AUTO CONFIGURATION -------------------------
+
+#---------------------------- ROLE CONFIGURATION ---------------------------------
+node.roles: {{ roles }}
+
+#-------------------------- END ROLE CONFIGURATION -------------------------------

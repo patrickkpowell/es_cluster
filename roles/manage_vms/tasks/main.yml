@@ -41,36 +41,38 @@
     - delpoy_vms
     - create
 
-- name: Shutdown Proxmox VM's
-  community.general.proxmox_kvm:
-    api_user: '{{ api_user }}'
-    api_password: '{{ api_pass }}'
-    api_host: '{{ api_host }}'
-    name: '{{ item.name }}'
-    node: '{{ vm_node }}'
-    state: 'stopped'
-    timeout: 60
-  loop:
-    "{{ vms }}"
-  tags:
-    - destroy
-    - shutdown
-  ignore_errors: true
+#- name: Shutdown Proxmox VM's
+#  community.general.proxmox_kvm:
+#    api_user: '{{ api_user }}'
+#    api_password: '{{ api_pass }}'
+#    api_host: '{{ api_host }}'
+#    name: '{{ item.name }}'
+#    node: '{{ vm_node }}'
+#    state: 'stopped'
+#    timeout: 60
+#  loop:
+#    "{{ vms }}"
+#  tags:
+#    - destroy
+#    - shutdown
+#  ignore_errors: true
 
-- name: Sleep for 300 seconds and continue with play
-  ansible.builtin.wait_for:
-    timeout: 10
-  tags:
-    - destroy
+#- name: Sleep for 300 seconds and continue with play
+#  ansible.builtin.wait_for:
+#    timeout: 10
+#  tags:
+#    - destroy
 
 - name: Destroy Proxmox VM's
   community.general.proxmox_kvm:
-    api_user: '{{ api_user }}'
-    api_password: '{{ api_pass }}'
-    api_host: '{{ api_host }}'
-    name: '{{ item.name }}'
-    node: '{{ vm_node }}'
-    state: 'absent'
+    api_user: "{{ api_user }}"
+    api_password: "{{ api_pass }}"
+    api_host: "{{ api_host }}"
+    name: "{{ item.name }}"
+    node: "{{ vm_node }}"
+    state: "absent"
+    force: true
+    timeout: 60
   loop:
     "{{ vms }}"
   tags:
@@ -78,11 +80,11 @@
 
 - name: Get Facts
   community.general.proxmox_kvm:
-    api_user: '{{ api_user }}'
-    api_password: '{{ api_pass }}'
-    api_host: '{{ api_host }}'
-    node: '{{ vm_node }}'
-    name: '{{ item.name }}'
+    api_user: "{{ api_user }}"
+    api_password: "{{ api_pass }}"
+    api_host: "{{ api_host }}"
+    node: "{{ vm_node }}"
+    name: "{{ item.name }}"
     validate_certs: false
     state: current
   loop:
@@ -92,14 +94,14 @@
     - delpoy_vms
     - create
 
-- name: Remove existing template nic
+- name: "Remove existing template nic"
   community.general.proxmox_nic:
-    api_user: '{{ api_user }}'
-    api_password: '{{ api_pass }}'
-    api_host: '{{ api_host }}'
-    name: '{{ item.name }}'
-    interface: '{{ item.interface }}'
-    state: 'absent'
+    api_user: "{{ api_user }}"
+    api_password: "{{ api_pass }}"
+    api_host: "{{ api_host }}"
+    name: "{{ item.name }}"
+    interface: "{{ item.interface }}"
+    state: "absent"
   loop:
     "{{ vms }}"
   when:

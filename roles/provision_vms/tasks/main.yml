@@ -21,8 +21,8 @@
   delay: 5
   delegate_to: '{{item}}'
   with_items:
-    - "{{groups['esnodes']}}"
-    - "{{groups['esmaster']}}"
+    - "{{groups['data_nodes']}}"
+    - "{{groups['master_nodes']}}"
     - "{{groups['kibnodes']}}"
   tags:
     - create

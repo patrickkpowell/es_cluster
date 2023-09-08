@@ -133,17 +133,6 @@
     - install_es
     - debug
 
-#- name: "Create certificate authority on the master node"
-#  ansible.builtin.shell:
-#    cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --out /etc/elasticsearch/certs/{{cluster_name}}_ca.p12 --pass {{TLS_Pass}}"
-#    creates: "/etc/elasticsearch/certs/{{cluster_name}}_ca.p12"
-#  when: inventory_hostname in groups['esmaster']
-#  tags:
-#    - create
-#    - install_es
-#    - debug
-#    - create_ca
-
 - name: "Create certificate authority pem on master node"
   ansible.builtin.shell:
     cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --pem --out /etc/elasticsearch/certs/{{cluster_name}}_ca.zip --pass {{TLS_Pass}}"
@@ -299,4 +288,3 @@
   tags:
     - create
     - install_es
-

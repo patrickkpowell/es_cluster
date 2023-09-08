@@ -8,12 +8,14 @@
   tags:
     - create
     - install_kib
+    - debug
 
 - name: "Print installer download locations"
   ansible.builtin.debug:
     msg: "Downloading from: >{{ kib_installer_url }}< To: >{{ tmp_dir }}/kibana.rpm<"
   tags:
     - create
+    - debug
 
 - name: "Check if file has already been downloaded"
   ansible.builtin.stat:
@@ -22,6 +24,15 @@
   tags:
     - create
     - install_kib
+    - debug
+
+- name: "Print file exists"
+  ansible.builtin.debug:
+    msg: "File exists: >{{ kib_file_exist.stat.exists }}<"
+  tags:
+    - create
+    - install_kib
+    - debug
 
 - name: "Download installer"
   ansible.builtin.get_url:
@@ -29,10 +40,11 @@
     dest: "{{ tmp_dir }}/kibana.rpm"
     mode: "0440"
     validate_certs: false
-  when: kib_file_exist.stat.exists == false
+  when: kib_file_exist.stat.exists == False
   tags:
     - create
     - install_kib
+    - debug
 
 - name: "Download sha512"
   ansible.builtin.get_url:
@@ -42,6 +54,7 @@
   tags:
     - create
     - install_kib
+    - debug
 
 - name: "Get sha256 sum of downloaded installer"
   ansible.builtin.stat:
@@ -52,6 +65,7 @@
   tags:
     - create
     - install_kib
+    - debug
 
 - name: "Register file hash"
   ansible.builtin.shell:
@@ -60,10 +74,15 @@
   tags:
     - create
     - install_kib
+    - debug
 
 - name: "Print hashes"
   ansible.builtin.debug:
-    msg: "File Contents: >{{ file_hash.stdout }}< File Hash >{{ file_stat.stat.checksum }}<"
+    msg: "File Contents: >{{file_hash.stdout}}< File Hash >{{file_stat.stat.checksum}}<"
+  tags:
+    - create
+    - install_kib
+    - debug
 
 - name: "Verify sha256sum of download before execution"
   ansible.builtin.fail:
@@ -163,8 +182,7 @@
 
 - name: "Generate key file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -info -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 >
-      -passin pass:{{ TLS_Pass }} -nodes -nocerts -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    cmd: "openssl pkcs12 -info -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -nodes -nocerts -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
     creates: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
   tags:
     - create
@@ -184,8 +202,7 @@
 
 - name: "Generate .pem file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} >
-      -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
+    cmd: "openssl pkcs12 -in /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -out /etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
     creates: "/etc/kibana/certs/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
   tags:
     - create
@@ -220,10 +237,3 @@
     - create
     - install_kib
     - debug
-
-#- name: Print enrollment token
-#  ansible.builtin.debug:
-#    msg: "{{ elasticpass.stdout }}"
-#  tags: 
-#    - create
-#    - install_kib
