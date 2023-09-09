@@ -23,7 +23,7 @@
   with_items:
     - "{{groups['data_nodes']}}"
     - "{{groups['master_nodes']}}"
-    - "{{groups['kibnodes']}}"
+    - "{{groups['kibana_nodes']}}"
   tags:
     - create
     - provision_vms

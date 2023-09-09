@@ -14,7 +14,8 @@
   hosts: 
     - data_nodes
     - master_nodes
-    - kibnodes
+    - ml_nodes
+    - kibana_nodes
   become: yes
   become_method: sudo
   become_user: root
@@ -24,7 +25,9 @@
 
 - name: Install Elasticsearch
   hosts: 
-    - esservers
+    - data_nodes
+    - master_nodes
+    - ml_nodes
   become: yes
   become_method: sudo
   become_user: root
@@ -44,7 +47,7 @@
 
 - name: Install Kibana
   hosts: 
-    - kibnodes
+    - kibana_nodes
   become: yes
   become_method: sudo
   become_user: root

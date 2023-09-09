@@ -22,6 +22,26 @@
     - delpoy_vms
     - create
 
+# - name: "Deploy ml servers"
+- name: "Deploy es servers"
+  community.general.proxmox_kvm:
+    api_user: "{{api_user}}"
+    api_password: "{{api_pass}}"
+    api_host: "{{api_host}}"
+    clone: "blah"
+    vmid: "{{ml_template_id}}"
+    name: "{{item.name}}"
+    node: "{{vm_node}}"
+    memory: "{{vm_memory}}"
+    timeout: 60
+    state: "present"
+  loop:
+    "{{vms}}"
+  when: item.type == 'ml'
+  tags:
+    - delpoy_vms
+    - create
+
 - name: "Deploy kib servers"
   community.general.proxmox_kvm:
     api_user: "{{ api_user }}"

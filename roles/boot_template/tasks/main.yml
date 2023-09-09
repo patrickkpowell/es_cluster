@@ -1,25 +1,37 @@
 ---
 # tasks file for boot_template
-- name: Start Template
+- name: "Start ES Template"
   community.general.proxmox_kvm:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{es_template}}'
-    node: '{{pve_node}}'
-    state: 'started'
+    api_user: "{{ api_user}}"
+    api_password: "{{ api_pass}}"
+    api_host: "{{ api_host}}"
+    name: "{{ es_template}}"
+    node: "{{ pve_node}}"
+    state: "started"
   tags:
     - delpoy_vms
     - create
 
-- name: Start Template
+- name: "Start Kibana Template"
   community.general.proxmox_kvm:
-    api_user: '{{api_user}}'
-    api_password: '{{api_pass}}'
-    api_host: '{{api_host}}'
-    name: '{{kib_template}}'
-    node: '{{pve_node}}'
-    state: 'started'
+    api_user: "{{ api_user}}"
+    api_password: "{{ api_pass}}"
+    api_host: "{{ api_host}}"
+    name: "{{ kib_template}}"
+    node: "{{ pve_node}}"
+    state: "started"
+  tags:
+    - delpoy_vms
+    - create
+
+- name: "Start ML Template"
+  community.general.proxmox_kvm:
+    api_user: "{{ api_user}}"
+    api_password: "{{ api_pass}}"
+    api_host: "{{ api_host}}"
+    name: "{{ ml_template}}"
+    node: "{{ pve_node}}"
+    state: "started"
   tags:
     - delpoy_vms
     - create

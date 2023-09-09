@@ -204,7 +204,17 @@
     - install_es
     - debug
 
-- name: "Create certificates for the cluster"
+- name: "Remove previous certificates incase nodes are added or removed"
+  ansible.builtin.file:
+    path: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
+    state: absent
+  when: inventory_hostname in groups['certnode']
+  tags:
+    - create
+    - install_es
+    - debug
+
+- name: "Create new certificates for the cluster"
   ansible.builtin.shell:
     cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --in /etc/elasticsearch/certs/es_instances.yml --ca-cert /etc/elasticsearch/certs/ca/ca.crt --ca-key /etc/elasticsearch/certs/ca/ca.key --out /etc/elasticsearch/certs/{{ cluster_name }}_certs.zip --pass {{ TLS_Pass }}"
     creates: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
@@ -214,7 +224,7 @@
     - install_es
     - debug
 
-- name: "Fetch cluster certificates file"
+- name: "Fetch new cluster certificates file"
   ansible.builtin.fetch:
     src: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"
     dest: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"
@@ -225,7 +235,7 @@
     - install_es
     - debug
 
-- name: "Push certs to nodes"
+- name: "Push new certs to nodes"
   ansible.builtin.copy:
     src: "{{ tmp_dir }}{{ cluster_name }}_certs.zip"
     dest: "/etc/elasticsearch/certs/{{ cluster_name }}_certs.zip"

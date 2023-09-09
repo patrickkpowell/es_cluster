@@ -71,7 +71,7 @@ network.host: 0.0.0.0
 #
 #discovery.seed_hosts: ["host1", "host2"]
 discovery.seed_hosts:
-  {% for host in groups['esservers'] %}
+  {% for host in groups['elastic_nodes'] %}
   - {{ host }}
   {% endfor %}
 #

@@ -1,5 +1,5 @@
 instances:
-{% for host in groups['kibnodes'] %}
+{% for host in groups['kibana_nodes'] %}
   - name: "{{ host }}"
     dns:
       - "{{ host }}"

@@ -18,7 +18,7 @@
   delegate_facts: true
   delegate_to: '{{item}}'
   with_items:
-    - "{{groups['kibnodes']}}"
+    - "{{groups['kibana_nodes']}}"
   tags:
     - create
     - debug

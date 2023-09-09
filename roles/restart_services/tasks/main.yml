@@ -5,7 +5,7 @@
   ansible.builtin.service:
     name: "elasticsearch"
     state: restarted
-  when: inventory_hostname in groups['esservers']
+  when: inventory_hostname in groups['elastic_nodes']
   tags:
     - restart_elasticsearch
 
@@ -13,7 +13,7 @@
   ansible.builtin.service:
     name: "kibana"
     state: restarted
-  when: inventory_hostname in groups['kibnodes']
+  when: inventory_hostname in groups['kibana_nodes']
   tags:
     - restart_kibana
 
@@ -21,10 +21,10 @@
 #  ansible.builtin.service:
 #    name: "kibana"
 #    state: stopped
-#  when: inventory_hostname in groups['kibnodes']
+#  when: inventory_hostname in groups['kibana_nodes']
 #
 #- name: Start Kibana services
 #  ansible.builtin.service:
 #    name: "kibana"
 #    state: started
-#  when: inventory_hostname in groups['kibnodes']
+#  when: inventory_hostname in groups['kibana_nodes']
