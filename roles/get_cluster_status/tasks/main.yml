@@ -27,3 +27,11 @@
   tags: 
     - create
     - status
+
+- name: Print elastic password
+  ansible.builtin.debug:
+    msg: "{{ elasticpass.stdout }}"
+  tags: 
+    - create
+    - status
+

@@ -3,9 +3,16 @@
 
 - name: "Remove locally fetched certificates"
   ansible.builtin.file:
-    path: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"
+    # path: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"
+    path: "/etc/elasticsearch/certs/{{ cluster_name }}{{ item }}"
     state: absent
   delegate_to: localhost
+  with_items:
+    - "{{ '_certs_pkcs12.zip' }}"
+    - "{{ '_http_certificates.zip' }}"
+    - "{{ '_fleet.zip' }}"
+    - "{{ '_ca.pem' }}"
+    - "{{ '_ca.p12' }} }}"
   tags:
     - create
     - install_es
