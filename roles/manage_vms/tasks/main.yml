@@ -2,8 +2,8 @@
 
 # tasks file for roles/deploy_vms
 
-# - name: "Deploy es servers"
-- name: "Deploy es servers"
+# - name: "Deploy es Hosts"
+- name: "Deploy es Hosts"
   community.general.proxmox_kvm:
     api_user: "{{api_user}}"
     api_password: "{{api_pass}}"
@@ -22,8 +22,8 @@
     - delpoy_vms
     - create
 
-# - name: "Deploy ml servers"
-- name: "Deploy es servers"
+# - name: "Deploy ml Hosts"
+- name: "Deploy ML Hosts"
   community.general.proxmox_kvm:
     api_user: "{{api_user}}"
     api_password: "{{api_pass}}"
@@ -42,7 +42,7 @@
     - delpoy_vms
     - create
 
-- name: "Deploy kib servers"
+- name: "Deploy Kibana Hosts"
   community.general.proxmox_kvm:
     api_user: "{{ api_user }}"
     api_password: "{{ api_pass }}"
@@ -61,27 +61,24 @@
     - delpoy_vms
     - create
 
-#- name: Shutdown Proxmox VM's
-#  community.general.proxmox_kvm:
-#    api_user: '{{ api_user }}'
-#    api_password: '{{ api_pass }}'
-#    api_host: '{{ api_host }}'
-#    name: '{{ item.name }}'
-#    node: '{{ vm_node }}'
-#    state: 'stopped'
-#    timeout: 60
-#  loop:
-#    "{{ vms }}"
-#  tags:
-#    - destroy
-#    - shutdown
-#  ignore_errors: true
-
-#- name: Sleep for 300 seconds and continue with play
-#  ansible.builtin.wait_for:
-#    timeout: 10
-#  tags:
-#    - destroy
+- name: "Deploy Fleet Hosts"
+  community.general.proxmox_kvm:
+    api_user: "{{ api_user }}"
+    api_password: "{{ api_pass }}"
+    api_host: "{{ api_host }}"
+    clone: "blah"
+    vmid: "{{ kib_template_id }}"
+    name: "{{ item.name }}"
+    node: "{{ vm_node }}"
+    memory: "{{ vm_memory }}"
+    timeout: 60
+    state: "present"
+  loop:
+    "{{ vms }}"
+  when: item.type == 'fleet'
+  tags:
+    - delpoy_vms
+    - create
 
 - name: Destroy Proxmox VM's
   community.general.proxmox_kvm:

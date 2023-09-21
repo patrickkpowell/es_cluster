@@ -176,92 +176,6 @@
     - create
     - certs
 
-#- name: "Push new ES certs to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_certs_pcks12.zip"
-#    dest: "/etc/kibana/certs/{{ cluster_name }}_certs_pkcs12.zip"
-#    owner: "root"
-#    group: "kibana"
-#    mode: "0660"
-#  # when: inventory_hostname in groups['elastic_nodes']
-#  tags:
-#    - create
-#    - certs
-#
-#- name: "Push Fleet certificates to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_fleet.zip"
-#    dest: "/etc/kibana/certs/{{ cluster_name }}_fleet.zip"
-#    owner: "root"
-#    group: "kibana"
-#    mode: "0660"
-#  # when: inventory_hostname in groups['kibana_nodes']
-#  tags:
-#    - create
-#    - certs
-#
-## Push new ca pem file to nodes
-#- name: "Push new ca pem file to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_ca.pem"
-#    dest: "/etc/kibana/certs/{{ cluster_name }}_ca.pem"
-#    owner: "root"
-#    group: "kibana"
-#    mode: "0660"
-#  # when: inventory_hostname in groups['elastic_nodes']
-#  tags:
-#    - create
-#    - certs
-#
-## Push new ca certificates p12 file to nodes
-#- name: "Push new ca certificates p12 file to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_ca.p12"
-#    dest: "/etc/kibana/certs/{{ cluster_name }}_ca.p12"
-#    owner: "root"
-#    group: "kibana"
-#    mode: "0660"
-#  # when: inventory_hostname in groups['elastic_nodes']
-#  tags:
-#    - create
-#    - certs
-
-#- name: "Push certs to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_certs_pcks12.zip"
-#    dest: "/etc/kibana/certs/{{ cluster_name }}_certs_pkcs12.zip"
-#    owner: "root"
-#    group: "kibana"
-#    mode: "0660"
-#  tags:
-#    - create
-#    - install_es
-#    - debug
-#
-#- name: "Push fleet certs to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_fleet.zip"
-#    dest: "/etc/kibana/certs/{{ cluster_name }}_fleet.zip"
-#    owner: "root"
-#    group: "kibana"
-#    mode: "0660"
-#  when: inventory_hostname in groups['kibana_nodes']
-#  tags:
-#    - create
-#    - certs
-#
-#- name: "Push ca pem to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_certs_pcks12.zip"
-#    dest: "/etc/kibana/certs/{{ cluster_name }}_certs_pkcs12.zip"
-#    owner: "root"
-#    group: "kibana"
-#    mode: "0660"
-#  tags:
-#    - create
-#    - install_es
-#    - debug
-
 - name: "Ensure certificate directories"
   ansible.builtin.file:
     path: "/etc/kibana/certs/{{ item }}"
@@ -297,31 +211,10 @@
     dest: "/etc/kibana/certs/http/"
     remote_src: true
   with_items:
-    # - "{{ '_certs_pkcs12.zip' }}"
     - "{{ '_http_certificates.zip' }}"
   tags:
     - create
     - certs
-
-#- name: "Unzip cluster certificates file"
-#  ansible.builtin.unarchive:
-#    src: "/etc/kibana/certs/{{ cluster_name }}_certs_pkcs12.zip"
-#    dest: "/etc/kibana/certs/"
-#    remote_src: true
-#  tags:
-#    - create
-#    - install_es
-#    - debug
-#
-#- name: "Unzip fleet certificates file on ES nodes"
-#  ansible.builtin.unarchive:
-#    src: "/etc/kibana/certs/{{ cluster_name }}_fleet.zip"
-#    dest: "/etc/kibana/certs/"
-#    remote_src: true
-#  # when: inventory_hostname in groups['kibana_nodes']
-#  tags:
-#    - create
-#    - certs
 
 - name: "Generate key file"
   ansible.builtin.shell:
@@ -363,40 +256,17 @@
     - install_kib
     - debug
 
-- name: "Store the password in the Elasticsearch transport keystore"
-  ansible.builtin.shell:
-    cmd: "echo {{ TLS_Pass }} | /usr/share/kibana/bin/kibana-keystore add xpack.security.transport.ssl.keystore.secure_password -fx"
+- name: "Set permissions on /etc/kibana/certs/ directory recursively"
+  ansible.builtin.file:
+    path: "/etc/kibana/certs/"
+    owner: "root"
+    group: "kibana"
+    mode: "u=rwX,g=rX,o=rX"
+    recurse: yes
   tags:
     - create
-    - certs
-    - keystore
-
-- name: "Store certificate password in xpack stores"
-  ansible.builtin.shell:
-    cmd: "echo {{ TLS_Pass }} | /usr/share/kibana/bin/kibana-keystore add {{ item }} -fx"
-  with_items:
-    - "{{ 'xpack.security.transport.ssl.keystore.secure_password' }}"
-    - "{{ 'xpack.security.transport.ssl.truststore.secure_password' }}"
-    - "{{ 'xpack.security.http.ssl.keystore.secure_password' }}"
-  tags:
-    - create
-    - certs
-
-#- name: "Store the password in the Elasticsearch transport truststore"
-#  ansible.builtin.shell:
-#    cmd: "echo {{ TLS_Pass }} | /usr/share/kibana/bin/kibana-keystore add xpack.security.transport.ssl.truststore.secure_password -fx"
-#  tags:
-#    - create
-#    - certs
-#    - keystore
-
-#- name: "Store the password in the Elasticsearch ssl store"
-#  ansible.builtin.shell:
-#    cmd: "echo {{ TLS_Pass }} | /usr/share/kibana/bin/kibana-keystore add xpack.security.http.ssl -fx"
-#  tags:
-#    - create
-#    - certs
-#    - keystore
+    - install_kib
+    - debug
 
 - name: "Enable kibana"
   ansible.builtin.systemd:

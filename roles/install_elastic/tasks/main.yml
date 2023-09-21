@@ -233,7 +233,7 @@
 
 - name: "Create fleet server certificates"
   ansible.builtin.shell:
-    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -ca /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 --out /etc/elasticsearch/certs/{{ cluster_name }}_fleet.zip -name fleet-server"
+    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -ca /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 --out /etc/elasticsearch/certs/{{ cluster_name }}_fleet.zip -name fl01.powellcompanies.com"
     creates: "/etc/elasticsearch/certs/{{ cluster_name }}_fleet.zip"
   when: inventory_hostname in groups['certnode']
   tags:
@@ -242,9 +242,7 @@
 
 - name: "Fetch new ES cluster certificates file"
   ansible.builtin.fetch:
-    # src: "/etc/elasticsearch/certs/{{ cluster_name }}_certs_pkcs12.zip"
     src: "/etc/elasticsearch/certs/{{ cluster_name }}{{ item }}"
-    # dest: "{{ tmp_dir }}/{{ cluster_name }}_certs_pcks12.zip"
     dest: "{{ tmp_dir }}/"
     flat: true
   when: inventory_hostname in groups['certnode']
@@ -257,12 +255,11 @@
   tags:
     - create
     - certs
+    - fetch
 
 - name: "Push new ES certs to nodes"
   ansible.builtin.copy:
-    #src: "{{ tmp_dir }}/{{ cluster_name }}_certs_pcks12.zip"
     src: "{{ tmp_dir }}/{{ cluster_name }}{{ item }}"
-    # dest: "/etc/elasticsearch/certs/{{ cluster_name }}_certs_pkcs12.zip"
     dest: "/etc/elasticsearch/certs/"
     owner: "root"
     group: "elasticsearch"
@@ -277,74 +274,6 @@
   tags:
     - create
     - certs
-
-#- name: "Fetch new Fleet certificates file"
-#  ansible.builtin.fetch:
-#    src: "/etc/elasticsearch/certs/{{ cluster_name }}_fleet.zip"
-#    dest: "{{ tmp_dir }}/{{ cluster_name }}_fleet.zip"
-#    flat: true
-#  when: inventory_hostname in groups['certnode']
-#  tags:
-#    - create
-#    - certs
-
-#- name: "Push Fleet certificates to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_fleet.zip"
-#    dest: "/etc/elasticsearch/certs/{{ cluster_name }}_fleet.zip"
-#    owner: "root"
-#    group: "elasticsearch"
-#    mode: "0660"
-#  # when: inventory_hostname in groups['kibana_nodes']
-#  tags:
-#    - create
-#    - certs
-
-#- name: "Fetch new ca pem file"
-#  ansible.builtin.fetch:
-#    src: "/etc/elasticsearch/certs/{{ cluster_name }}_ca.pem"
-#    dest: "{{ tmp_dir }}/{{ cluster_name }}_ca.pem"
-#    flat: true
-#  when: inventory_hostname in groups['certnode']
-#  tags:
-#    - create
-#    - certs
-
-# Push new ca pem file to nodes
-#- name: "Push new ca pem file to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_ca.pem"
-#    dest: "/etc/elasticsearch/certs/{{ cluster_name }}_ca.pem"
-#    owner: "root"
-#    group: "elasticsearch"
-#    mode: "0660"
-#  # when: inventory_hostname in groups['elastic_nodes']
-#  tags:
-#    - create
-#    - certs
-
-#- name: "Fetch new ca certificates p12 file"
-#  ansible.builtin.fetch:
-#    src: "/etc/elasticsearch/certs/{{ cluster_name }}_ca.p12"
-#    dest: "{{ tmp_dir }}/{{ cluster_name }}_ca.p12"
-#    flat: true
-#  when: inventory_hostname in groups['certnode']
-#  tags:
-#    - create
-#    - certs
-
-# Push new ca certificates p12 file to nodes
-#- name: "Push new ca certificates p12 file to nodes"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_ca.p12"
-#    dest: "/etc/elasticsearch/certs/{{ cluster_name }}_ca.p12"
-#    owner: "root"
-#    group: "elasticsearch"
-#    mode: "0660"
-#  # when: inventory_hostname in groups['elastic_nodes']
-#  tags:
-#    - create
-#    - certs
 
 - name: "Ensure certificate directories"
   ansible.builtin.file:
@@ -362,34 +291,35 @@
 
 - name: "Unzip transport certificates file on ES nodes"
   ansible.builtin.unarchive:
-    # src: "/etc/elasticsearch/certs/{{ cluster_name }}_certs_pkcs12.zip"
     src: "/etc/elasticsearch/certs/{{ cluster_name }}{{ item }}"
     dest: "/etc/elasticsearch/certs/transport/"
     remote_src: true
   when: inventory_hostname in groups['elastic_nodes']
   with_items:
     - "{{ '_certs_pkcs12.zip' }}"
-    # - "{{ '_http_certificates.zip' }}"
-    # - "{{ '_fleet.zip' }}"
-    # - "{{ /etc/elasticsearch/certs/{{ cluster_name }}_ca.pem }}"
-    # - "{{ /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 }} }}"
   tags:
     - create
     - certs
 
 - name: "Unzip http certificates file on ES nodes"
   ansible.builtin.unarchive:
-    # src: "/etc/elasticsearch/certs/{{ cluster_name }}_certs_pkcs12.zip"
     src: "/etc/elasticsearch/certs/{{ cluster_name }}{{ item }}"
     dest: "/etc/elasticsearch/certs/http/"
     remote_src: true
   when: inventory_hostname in groups['elastic_nodes']
   with_items:
-    # - "{{ '_certs_pkcs12.zip' }}"
     - "{{ '_http_certificates.zip' }}"
   tags:
     - create
     - certs
+
+- name: "Set permissions on /etc/elasticsearch/certs/ directory recursively"
+  ansible.builtin.file:
+    path: /etc/elasticsearch/certs
+    state: directory
+    mode: '0770'
+    owner: elasticsearch
+    group: elasticsearch
 
 - name: "Store certificate password in xpack stores"
   ansible.builtin.shell:
@@ -398,6 +328,7 @@
     - "{{ 'xpack.security.transport.ssl.keystore.secure_password' }}"
     - "{{ 'xpack.security.transport.ssl.truststore.secure_password' }}"
     - "{{ 'xpack.security.http.ssl.keystore.secure_password' }}"
+  when: inventory_hostname in groups['elastic_nodes']
   tags:
     - create
     - certs

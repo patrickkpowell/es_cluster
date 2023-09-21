@@ -53,11 +53,11 @@
   roles:
     - roles/install_kibana
 
-- name: Cleanup when we're done
-  hosts: certnode
-  gather_facts: false
-  roles:
-    - roles/cleanup
+#- name: Cleanup when we're done
+#  hosts: certnode
+#  gather_facts: false
+#  roles:
+#    - roles/cleanup
 
 - name: Get Cluster Status
   hosts: 
