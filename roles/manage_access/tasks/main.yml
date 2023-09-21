@@ -11,6 +11,9 @@
 - name: Print kibana password
   ansible.builtin.debug:
     msg: '{{kib_password.stdout}}'
+  tags:
+    - create
+    - debug
 
 - name: Export password
   set_fact:

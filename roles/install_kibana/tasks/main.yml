@@ -12,14 +12,14 @@
 
 - name: "Print installer download locations"
   ansible.builtin.debug:
-    msg: "Downloading from: >{{ kib_installer_url }}< To: >{{ tmp_dir }}/kibana.rpm<"
+    msg: "Downloading from: >{{ kib_installer_url }}< To: >{{ tmp_dir }}/kibana-{{ es_version }}.rpm<"
   tags:
     - create
     - debug
 
 - name: "Check if file has already been downloaded"
   ansible.builtin.stat:
-    path: "{{ tmp_dir }}/kibana.rpm"
+    path: "{{ tmp_dir }}/kibana-{{ es_version }}.rpm"
   register: kib_file_exist
   tags:
     - create
@@ -37,7 +37,7 @@
 - name: "Download installer"
   ansible.builtin.get_url:
     url: "{{ kib_installer_url }}"
-    dest: "{{ tmp_dir }}/kibana.rpm"
+    dest: "{{ tmp_dir }}/kibana-{{ es_version }}.rpm"
     mode: "0440"
     validate_certs: false
   when: kib_file_exist.stat.exists == False
@@ -49,7 +49,7 @@
 - name: "Download sha512"
   ansible.builtin.get_url:
     url: "{{ kib_installer_sha_url }}"
-    dest: "{{ tmp_dir }}/kibana.sha512"
+    dest: "{{ tmp_dir }}/kibana-{{ es_version }}.sha512"
     mode: "0440"
   tags:
     - create
@@ -58,7 +58,7 @@
 
 - name: "Get sha256 sum of downloaded installer"
   ansible.builtin.stat:
-    path: "{{ tmp_dir }}/kibana.rpm"
+    path: "{{ tmp_dir }}/kibana-{{ es_version }}.rpm"
     checksum_algorithm: "sha512"
     get_checksum: true
   register: file_stat
@@ -69,7 +69,7 @@
 
 - name: "Register file hash"
   ansible.builtin.shell:
-    cmd: "cat {{ tmp_dir }}/kibana.sha512 | awk '{print $1}'"
+    cmd: "cat {{ tmp_dir }}/kibana-{{ es_version }}.sha512 | awk '{print $1}'"
   register: file_hash
   tags:
     - create
@@ -117,7 +117,7 @@
 
 - name: "Install kibana package"
   ansible.builtin.yum:
-    name: '{{ tmp_dir }}/kibana.rpm'
+    name: '{{ tmp_dir }}/kibana-{{ es_version }}.rpm'
     state: present
   register: install_out
   tags:
@@ -175,6 +175,24 @@
   tags:
     - create
     - certs
+
+#- name: "Push CA to PKI trust"
+#  ansible.builtin.copy:
+#    src: "{{tmp_dir}}/{{ cluster_name }}_ca.pem"
+#    dest: "/etc/pki/ca-trust/source/anchors/"
+#    owner: "root"
+#    group: "root"
+#    mode: "0644"
+#  tags:
+#    - create
+#    - certs
+
+#- name: "Update PKI trust"
+#  ansible.builtin.shell:
+#    cmd: "update-ca-trust"
+#  tags:
+#    - create
+#    - certs 
 
 - name: "Ensure certificate directories"
   ansible.builtin.file:
