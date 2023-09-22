@@ -1,0 +1,53 @@
+# Create a jinja2 template with for-each that itterates ansible host inventory group esservers for use with elasticseach cert util
+# This will create a file called elasticsearch.yml.j2 in the current directory
+# This file will be used by the ansible playbook to generate the elasticsearch.yml file on the remote host
+# The elasticsearch.yml file will be used by the elasticsearch-certutil to generate the certificates
+# The certificates will be used by the elasticsearch nodes to communicate with each other
+# The certificates will be used by the kibana nodes to communicate with the elasticsearch nodes
+# The certificates will be used by the logstash nodes to communicate with the elasticsearch nodes
+# The certificates will be used by the beats nodes to communicate with the elasticsearch nodes
+# The certificates will be used by the logstash nodes to communicate with the beats nodes
+# The certificates will be used by the beats nodes to communicate with the logstash nodes
+# The certificates will be used by the kibana nodes to communicate with the logstash nodes
+# The certificates will be used by the logstash nodes to communicate with the kibana nodes
+# The certificates will be used by the beats nodes to communicate with the kibana nodes
+# The certificates will be used by the kibana nodes to communicate with the beats nodes
+# The certificates will be used by the logstash nodes to communicate with the logstash nodes
+# The certificates will be used by the beats nodes to communicate with the beats nodes
+# The certificates will be used by the kibana nodes to communicate with the kibana nodes
+# The certificates will be used by the logstash nodes to communicate with the logstash nodes
+# The certificates will be used by the beats nodes to communicate with the beats nodes
+# The certificates will be used by the kibana nodes to communicate with the kibana nodes
+# The certificates will be used by the logstash nodes to communicate with the logstash nodes
+# The certificates will be used by the beats nodes to communicate with the beats nodes
+# The certificates will be used by the kibana nodes to communicate with the kibana nodes
+# The certificates will be used by the logstash nodes to communicate with the logstash nodes
+# The certificates will be used by the beats nodes to communicate with the beats nodes
+# The certificates will be used by the kibana nodes to communicate with the kibana nodes
+# The certificates will be used by the logstash nodes to communicate with the logstash nodes
+# The certificates will be used by the beats nodes to communicate with the beats nodes
+# The certificates will be used by the kibana nodes to communicate with the kibana nodes
+# The certificates will be used by the logstash nodes to communicate with the logstash nodes
+# The certificates will be used by the beats nodes to communicate with the beats nodes
+# The certificates will be used by the kibana nodes to communicate with the kibana nodes
+# The certificates will be used by the logstash nodes to communicate with the logstash nodes
+
+cat << EOF > elasticsearch.yml.j2
+cluster.name: {{ cluster_name }}
+node.name: {{ ansible_hostname }}
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+network.host: {{ ansible_default_ipv4.address }}
+http.port: 9200
+discovery.seed_hosts: [{% for host in groups['esservers'] %}"{{ hostvars[host]['ansible_default_ipv4']['address'] }}"{% if not loop.last %},{% endif %}{% endfor %}]
+cluster.initial_master_nodes: [{% for host in groups['esservers'] %}"{{ hostvars[host]['ansible_default_ipv4']['address'] }}"{% if not loop.last %},{% endif %}{% endfor %}]
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: certs/{{ ansible_hostname }}.p12
+xpack.security.transport.ssl.truststore.path: certs/{{ ansible_hostname }}.p12
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.keystore.path: certs/{{ ansible_hostname }}.p12
+xpack.security.http.ssl.truststore.path: certs/{{ ansible_hostname }}.p12
+EOF
+

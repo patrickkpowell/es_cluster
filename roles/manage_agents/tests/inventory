@@ -1,0 +1,80 @@
+---
+all:
+  hosts:
+    localhost:
+      localhost ansible_connection: 'local'
+      ansible_host: 127.0.0.1
+      elasticpass: {
+        stdout: "test_password"
+        }
+    pve.powellcompanies.com:
+      ansible_user: 'root'
+    es01.powellcompanies.com:
+      ansible_host: 192.168.3.137
+    es02.powellcompanies.com:
+      ansible_host: 192.168.3.140
+    es03.powellcompanies.com:
+      ansible_host: 192.168.3.141
+    es04.powellcompanies.com:
+      ansible_host: 192.168.3.145
+    kib01.powellcompanies.com:
+      ansible_host: 192.168.3.194
+    fl01.powellcompanies.com:
+      ansible_host: 192.168.3.122
+proxmox:
+  hosts:
+    pve.powellcompanies.com:
+certnode:
+  hosts:
+    es02.powellcompanies.com:
+data_nodes:
+  vars:
+    roles: ['data', 'ingest', 'remote_cluster_client']
+  hosts:
+    es02.powellcompanies.com:
+    es03.powellcompanies.com:
+master_nodes:
+  vars:
+    roles: ['master']
+  hosts:
+    es01.powellcompanies.com:
+ml_nodes:
+  vars:
+    roles: ['ml', 'remote_cluster_client']
+  hosts:
+    es04.powellcompanies.com:
+elastic_nodes:
+  children:
+    data_nodes:
+    master_nodes:
+    ml_nodes:
+kibana_nodes:
+  hosts:
+    kib01.powellcompanies.com:
+all_es_nodes:
+  children:
+    elastic_nodes:
+    kibana_nodes:
+    ml_nodes:
+    data_nodes:
+    master_nodes:
+fleet_nodes:
+  hosts:
+    fl01.powellcompanies.com:
+macos_nodes:
+  hosts:
+    192.168.3.138:
+      ansible_python_interpreter: /usr/bin/python3
+    192.168.3.144:
+      ansible_python_interpreter: /usr/bin/python3
+windows_nodes:
+  hosts:
+agents:
+  children:
+    all_es_nodes:
+    fleet_nodes:
+templates:
+  hosts:
+    estemplate.powellcompanies.com: null
+    kibtemplate.powellcompanies.com: null
+    mltemplate.powellcompanies.com: null

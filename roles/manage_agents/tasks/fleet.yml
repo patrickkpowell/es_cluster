@@ -1,0 +1,122 @@
+---
+
+- name: "Wait for SSH"
+  ansible.builtin.wait_for_connection:
+
+- name: "Import elastic rpm key"
+  ansible.builtin.rpm_key:
+    state: 'present'
+    key: 'https://artifacts.elastic.co/GPG-KEY-elasticsearch'
+  tags:
+    - create
+    - fleet
+
+- name: Print installer download locations
+  ansible.builtin.debug:
+    msg: "Downloading from: >{{ elastic_agent_installer_url }}< To: >{{ tmp_dir }}/elastic_agent-{{ es_version }}.rpm<"
+  tags:
+    - create
+    - fleet
+
+- name: "Check if file has already been downloaded"
+  ansible.builtin.stat:
+    path: "{{ tmp_dir }}/elastic_agent-{{ es_version }}.rpm"
+  register: mb_file_exist
+  tags:
+    - create
+    - fleet
+
+- name: "Download installer"
+  ansible.builtin.get_url:
+    url: "{{ elastic_agent_installer_url }}"
+    dest: "{{ tmp_dir }}/elastic_agent-{{ es_version }}.rpm"
+    mode: '0440'
+    validate_certs: false
+  when: mb_file_exist.stat.exists == false
+  tags:
+    - create
+    - fleet
+
+- name: "Download sha512"
+  ansible.builtin.get_url:
+    url: "{{ elastic_agent_installer_sha_url }}"
+    dest: "{{ tmp_dir }}/elastic_agent-{{ es_version }}.rpm.sha512"
+    mode: '0440'
+  tags:
+    - create
+    - fleet
+
+- name: "Get sha256 sum of downloaded installer"
+  ansible.builtin.stat:
+    path: "{{ tmp_dir }}/elastic_agent-{{ es_version }}.rpm"
+    checksum_algorithm: sha512
+    get_checksum: true
+  register: file_stat
+  tags:
+    - create
+    - fleet
+
+- name: "Register file hash"
+  ansible.builtin.shell:
+    cmd: "cat {{ tmp_dir }}/elastic_agent-{{ es_version }}.rpm.sha512 | awk '{print $1}'"
+  register: file_hash
+  tags:
+    - create
+    - fleet
+
+- name: "Print hashes"
+  ansible.builtin.debug:
+    msg: "File Contents: >{{ file_hash.stdout }}< File Hash >{{ file_stat.stat.checksum }}<"
+  tags:
+    - create
+    - fleet
+
+- name: "Verify sha256sum of download before execution"
+  ansible.builtin.fail:
+    msg: "Failure, file is not correct."
+  when: file_stat.stat.checksum != file_hash.stdout
+  tags:
+    - create
+    - fleet
+
+#- name: "Create Fleet Policy"
+#  ansible.builtin.uri:
+#    url: "{{ kib_url }}/api/fleet/agent_policies?sys_monitoring=true"
+#    method: POST
+#    user: "{{ kib_user }}"
+#    password: "HR+bYzX0delY6XmOwLM8"
+#    validate_certs: false
+#    # headers:
+#    #   'kbn-xsrf': 'true'
+#    #   'content-type': 'application/json'
+#    body:
+#      name: "{{ fleet_policy_name }}"
+#      namespace: default
+#      # monitoring_enabled: ["logs","metrics"]
+#  tags:
+#    - create
+#    - fleet
+
+#- name: "Create Fleet Policy"
+#  ansible.builtin.shell:
+#    cmd: "curl -k -u elastic:zkoFj1UKkfFd+wHA_jO7 --request POST --url {{ kib_url }}/api/fleet/agent_policies?sys_monitoring=true --header 'content-type: application/json' --header 'kbn-xsrf: true' --data '{\"name\":\"{{ fleet_policy_name }}\",\"namespace\":\"default\",\"monitoring_enabled\":[\"logs\",\"metrics\"]}'"
+#  tags:
+#    - create
+#    - fleet
+#    - fleet_policy
+
+- name: "Deploy enroll-fleet-agent templates"
+  ansible.builtin.template:
+    src: "enroll-fleet-agent.sh.j2"
+    dest: "{{ tmp_dir }}/enroll-fleet-agent.sh"
+    mode: '0755'
+  tags:
+    - create
+    - fleet
+
+- name: "Execute fleet enroll script"
+  ansible.builtin.shell:
+    cmd: "{{ tmp_dir }}/enroll-fleet-agent.sh"
+  tags:
+    - create
+    - fleet
