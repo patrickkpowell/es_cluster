@@ -16,12 +16,14 @@
     - master_nodes
     - ml_nodes
     - kibana_nodes
+    - fleet_nodes
   become: yes
   become_method: sudo
   become_user: root
   gather_facts: false
   roles:
     - roles/provision_vms
+    
 
 - name: Install Elasticsearch
   hosts: 
@@ -32,6 +34,12 @@
   gather_facts: false
   roles:
     - roles/install_elastic
+    
+#- name: Push Certificates
+#  hosts: certnode
+#  gather_facts: false
+#  roles:
+#    - roles/push_certs
 
 - name: Create Cluster Token
   hosts:

@@ -148,7 +148,7 @@
 
 - name: "Create certs directory"
   ansible.builtin.file:
-    path: "/etc/kibana/certs"
+    path: "{{ es_cert_dir }}"
     state: directory
     owner: "root"
     group: "kibana"
@@ -161,7 +161,7 @@
 - name: "Push new ES certs to nodes"
   ansible.builtin.copy:
     src: "{{ tmp_dir }}/{{ cluster_name }}{{ item }}"
-    dest: "/etc/kibana/certs/"
+    dest: "{{ es_cert_dir }}"
     owner: "root"
     group: "kibana"
     mode: "0660"
@@ -196,7 +196,7 @@
 
 - name: "Ensure certificate directories"
   ansible.builtin.file:
-    path: "/etc/kibana/certs/{{ item }}"
+    path: "{{ es_cert_dir }}/{{ item }}"
     state: "directory"
     owner: "root"
     group: "kibana"
@@ -210,23 +210,23 @@
 
 - name: "Unzip transport certificates file on ES nodes"
   ansible.builtin.unarchive:
-    src: "/etc/kibana/certs/{{ cluster_name }}{{ item }}"
-    dest: "/etc/kibana/certs/transport/"
+    src: "{{ es_cert_dir }}/{{ cluster_name }}{{ item }}"
+    dest: "{{ es_cert_dir }}/transport/"
     remote_src: true
   with_items:
     - "{{ '_certs_pkcs12.zip' }}"
     # - "{{ '_http_certificates.zip' }}"
     # - "{{ '_fleet.zip' }}"
-    # - "{{ /etc/kibana/certs/{{ cluster_name }}_ca.pem }}"
-    # - "{{ /etc/kibana/certs/{{ cluster_name }}_ca.p12 }} }}"
+    # - "{{ {{ es_cert_dir }}/{{ cluster_name }}_ca.pem }}"
+    # - "{{ {{ es_cert_dir }}/{{ cluster_name }}_ca.p12 }} }}"
   tags:
     - create
     - certs
 
 - name: "Unzip http certificates file on ES nodes"
   ansible.builtin.unarchive:
-    src: "/etc/kibana/certs/{{ cluster_name }}{{ item }}"
-    dest: "/etc/kibana/certs/http/"
+    src: "{{ es_cert_dir }}/{{ cluster_name }}{{ item }}"
+    dest: "{{ es_cert_dir }}/http/"
     remote_src: true
   with_items:
     - "{{ '_http_certificates.zip' }}"
@@ -236,8 +236,8 @@
 
 - name: "Generate key file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -info -in /etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -nodes -nocerts -out /etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
-    creates: "/etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    cmd: "openssl pkcs12 -info -in {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -nodes -nocerts -out {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    creates: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
   tags:
     - create
     - install_kib
@@ -245,7 +245,7 @@
 
 - name: "Set permissions on key file"
   ansible.builtin.file:
-    path: "/etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    path: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
     owner: "root"
     group: "kibana"
     mode: "0660"
@@ -256,8 +256,8 @@
 
 - name: "Generate .pem file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -in /etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -out /etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
-    creates: "/etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
+    cmd: "openssl pkcs12 -in {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -out {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
+    creates: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
   tags:
     - create
     - install_kib
@@ -265,7 +265,7 @@
 
 - name: "Set permissions on .pem file"
   ansible.builtin.file:
-    path: "/etc/kibana/certs/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
+    path: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
     owner: "root"
     group: "kibana"
     mode: "0660"
@@ -274,9 +274,9 @@
     - install_kib
     - debug
 
-- name: "Set permissions on /etc/kibana/certs/ directory recursively"
+- name: "Set permissions on {{ es_cert_dir }}/ directory recursively"
   ansible.builtin.file:
-    path: "/etc/kibana/certs/"
+    path: "{{ es_cert_dir }}/"
     owner: "root"
     group: "kibana"
     mode: "u=rwX,g=rX,o=rX"

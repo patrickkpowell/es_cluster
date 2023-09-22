@@ -99,6 +99,7 @@
     name: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
     state: present
   register: install_out
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
   tags:
     - create
 
@@ -115,13 +116,14 @@
     dest: "/etc/elasticsearch/elasticsearch.yml"
     owner: "root"
     group: "elasticsearch"
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
   tags:
     - create
     - debug
 
 - name: "Ensure certs directory exists on ES servers"
   ansible.builtin.file:
-    path: "/etc/elasticsearch/certs"
+    path: "{{ es_cert_dir }}"
     state: "directory"
     owner: "root"
     group: "elasticsearch"
@@ -129,7 +131,7 @@
   tags:
     - create
     - certs
-  when: inventory_hostname in groups['elastic_nodes']
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
 
 #- name: "Ensure certs directory exists on Kibana servers"
 #  ansible.builtin.file:
@@ -147,25 +149,25 @@
 #####################################################################################################
 # Create new certificate authority pcks12 and pem files
 #####################################################################################################
-- name: "Create certificate authority pkcs12 on certificate node"
-  ansible.builtin.shell:
-    cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --pass {{ TLS_Pass }} --out /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12"
-    creates: "/etc/elasticsearch/certs/{{ cluster_name }}_ca.p12"
-  when: inventory_hostname in groups['certnode']
-  tags:
-    - create
-    - certs
-    - create_ca
-
-- name: "Convert certificate authority pkcs12 to pem on certificate node"
-  ansible.builtin.shell:
-    cmd: "openssl pkcs12 -in /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 -out /etc/elasticsearch/certs/{{ cluster_name }}_ca.pem -passin pass:{{ TLS_Pass }} -passout pass:{{ TLS_Pass }}"
-    creates: "/etc/elasticsearch/certs/{{ cluster_name }}_ca.pem"
-  when: inventory_hostname in groups['certnode']
-  tags:
-    - create
-    - certs
-    - create_ca
+# - name: "Create certificate authority pkcs12 on certificate node"
+#   ansible.builtin.shell:
+#     cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --pass {{ TLS_Pass }} --out {{ es_cert_dir }}/{{ cluster_name }}_ca.p12"
+#     creates: "{{ es_cert_dir }}/{{ cluster_name }}_ca.p12"
+#   when: inventory_hostname in groups['certnode']
+#   tags:
+#     - create
+#     - certs
+#     - create_ca
+# 
+# - name: "Convert certificate authority pkcs12 to pem on certificate node"
+#   ansible.builtin.shell:
+#     cmd: "openssl pkcs12 -in {{ es_cert_dir }}/{{ cluster_name }}_ca.p12 -out {{ es_cert_dir }}/{{ cluster_name }}_ca.pem -passin pass:{{ TLS_Pass }} -passout pass:{{ TLS_Pass }}"
+#     creates: "{{ es_cert_dir }}/{{ cluster_name }}_ca.pem"
+#   when: inventory_hostname in groups['certnode']
+#   tags:
+#     - create
+#     - certs
+#     - create_ca
 
 #####################################################################################################
 # Deploy instances files to certificate node
@@ -175,7 +177,7 @@
 - name: "Deploy _instances.yml templates"
   ansible.builtin.template:
     src: "transport_instances.yml.j2"
-    dest: "/etc/elasticsearch/certs/transport_instances.yml"
+    dest: "{{ es_cert_dir }}/transport_instances.yml"
     owner: "root"
     group: "elasticsearch"
     mode: "0644"
@@ -191,7 +193,7 @@
 - name: "Deploy _instances.yml templates"
   ansible.builtin.template:
     src: "http_instances.yml.j2"
-    dest: "/etc/elasticsearch/certs/http_instances.yml"
+    dest: "{{ es_cert_dir }}/http_instances.yml"
     owner: "root"
     group: "elasticsearch"
     mode: "0644"
@@ -204,140 +206,12 @@
     - deploy_instances
     - certs
 
-#- name: "Deploy http_instances.yml template"
-#  ansible.builtin.template:
-#    src: http_instances.yml.j2
-#    dest: /etc/elasticsearch/certs/http_instances.yml
-#    owner: root
-#    group: elasticsearch
-#    mode: '0644'
-#  when: inventory_hostname in groups['cert_nodes']
-
-- name: "Create transport p12 certificates from pem ca"
-  ansible.builtin.shell:
-    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert -s --pass {{ TLS_Pass }} --ca /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 --in /etc/elasticsearch/certs/transport_instances.yml --out /etc/elasticsearch/certs/{{ cluster_name }}_certs_pkcs12.zip"
-    creates: "/etc/elasticsearch/certs/{{ cluster_name }}_certs_pkcs12.zip"
+- name: "Include tasks to create certificates"
+  include_tasks: create_certs.yml
   when: inventory_hostname in groups['certnode']
   tags:
     - create
     - certs
-
-- name: "Create http p12 certificates from pem ca"
-  ansible.builtin.shell:
-    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert -s --pass {{ TLS_Pass }} --ca /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 --in /etc/elasticsearch/certs/http_instances.yml --out /etc/elasticsearch/certs/{{ cluster_name }}_http_certificates.zip"
-    creates: "/etc/elasticsearch/certs/{{ cluster_name }}_http_certificates.zip"
-  when: inventory_hostname in groups['certnode']
-  tags:
-    - create
-    - certs
-
-- name: "Create fleet server certificates"
-  ansible.builtin.shell:
-    cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -ca /etc/elasticsearch/certs/{{ cluster_name }}_ca.p12 --out /etc/elasticsearch/certs/{{ cluster_name }}_fleet.zip -name fl01.powellcompanies.com"
-    creates: "/etc/elasticsearch/certs/{{ cluster_name }}_fleet.zip"
-  when: inventory_hostname in groups['certnode']
-  tags:
-    - create
-    - certs
-
-- name: "Fetch new ES cluster certificates file"
-  ansible.builtin.fetch:
-    src: "/etc/elasticsearch/certs/{{ cluster_name }}{{ item }}"
-    dest: "{{ tmp_dir }}/"
-    flat: true
-  when: inventory_hostname in groups['certnode']
-  with_items:
-    - "{{ '_certs_pkcs12.zip' }}"
-    - "{{ '_http_certificates.zip' }}"
-    - "{{ '_fleet.zip' }}"
-    - "{{ '_ca.pem' }}"
-    - "{{ '_ca.p12' }}"
-  tags:
-    - create
-    - certs
-    - fetch
-
-- name: "Push new ES certs to nodes"
-  ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ cluster_name }}{{ item }}"
-    dest: "/etc/elasticsearch/certs/"
-    owner: "root"
-    group: "elasticsearch"
-    mode: "0660"
-  with_items:
-    - "{{ '_certs_pkcs12.zip' }}"
-    - "{{ '_http_certificates.zip' }}"
-    - "{{ '_fleet.zip' }}"
-    - "{{ '_ca.pem' }}"
-    - "{{ '_ca.p12' }}"
-  # when: inventory_hostname in groups['elastic_nodes']
-  tags:
-    - create
-    - certs
-
-- name: "Ensure certificate directories"
-  ansible.builtin.file:
-    path: "/etc/elasticsearch/certs/{{ item }}"
-    state: "directory"
-    owner: "root"
-    group: "elasticsearch"
-    mode: "0770"
-  with_items:
-    - "{{ 'transport' }}"
-    - "{{ 'http' }}"
-  tags:
-    - create
-    - certs
-
-#- name: "Push CA to PKI trust"
-#  ansible.builtin.copy:
-#    src: "{{ tmp_dir }}/{{ cluster_name }}_ca.pem"
-#    dest: "/etc/pki/ca-trust/source/anchors/"
-#    owner: "root"
-#    group: "root"
-#    mode: "0644"
-#  tags:
-#    - create
-#    - certs
-
-#- name: "Update PKI trust"
-#  ansible.builtin.shell:
-#    cmd: "update-ca-trust"
-#  tags:
-#    - create
-#    - certs 
-
-- name: "Unzip transport certificates file on ES nodes"
-  ansible.builtin.unarchive:
-    src: "/etc/elasticsearch/certs/{{ cluster_name }}{{ item }}"
-    dest: "/etc/elasticsearch/certs/transport/"
-    remote_src: true
-  when: inventory_hostname in groups['elastic_nodes']
-  with_items:
-    - "{{ '_certs_pkcs12.zip' }}"
-  tags:
-    - create
-    - certs
-
-- name: "Unzip http certificates file on ES nodes"
-  ansible.builtin.unarchive:
-    src: "/etc/elasticsearch/certs/{{ cluster_name }}{{ item }}"
-    dest: "/etc/elasticsearch/certs/http/"
-    remote_src: true
-  when: inventory_hostname in groups['elastic_nodes']
-  with_items:
-    - "{{ '_http_certificates.zip' }}"
-  tags:
-    - create
-    - certs
-
-- name: "Set permissions on /etc/elasticsearch/certs/ directory recursively"
-  ansible.builtin.file:
-    path: /etc/elasticsearch/certs
-    state: directory
-    mode: '0770'
-    owner: elasticsearch
-    group: elasticsearch
 
 - name: "Store certificate password in xpack stores"
   ansible.builtin.shell:
