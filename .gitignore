@@ -6,7 +6,5 @@ playbooks/*
 hosts.yml
 roles/create_cluster_token
 roles/join_cluster
-roles/manage_agents
-roles/manage_certs
 clean_certs.sh
 !/.gitignore
