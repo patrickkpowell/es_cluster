@@ -11,67 +11,70 @@
   tags:
     - create
 
-- name: Print installer download locations
-  ansible.builtin.debug:
-    msg: "Downloading from: >{{ es_installer_url }}< To: >{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm<"
-  tags:
-    - create
+- name: "Download and install block"
+  block:
+    - name: Print installer download locations
+      ansible.builtin.debug:
+        msg: "Downloading from: >{{ es_installer_url }}< To: >{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm<"
+      tags:
+        - create
 
-- name: "Check if file has already been downloaded"
-  ansible.builtin.stat:
-    path: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
-  register: es_file_exist
-  tags:
-    - create
+    - name: "Check if file has already been downloaded"
+      ansible.builtin.stat:
+        path: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
+      register: es_file_exist
+      tags:
+        - create
 
-- name: "Download installer"
-  ansible.builtin.get_url:
-    url: "{{ es_installer_url }}"
-    dest: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
-    mode: '0440'
-    # creates: '{{tmp_dir}}/elasticsearch.rpm'
-    validate_certs: false
-  # when: "{{tmp_dir}}/elasticsearch.rpm.stat.exists" == False
-  when: es_file_exist.stat.exists == False
-  tags:
-    - create
+    - name: "Download installer"
+      ansible.builtin.get_url:
+        url: "{{ es_installer_url }}"
+        dest: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
+        mode: '0440'
+        # creates: '{{tmp_dir}}/elasticsearch.rpm'
+        validate_certs: false
+      # when: "{{tmp_dir}}/elasticsearch.rpm.stat.exists" == False
+      tags:
+        - create
 
-- name: "Download sha512"
-  ansible.builtin.get_url:
-    url: "{{ es_installer_sha_url }}"
-    dest: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.sha512"
-    mode: '0440'
-  tags:
-    - create
+    - name: "Download sha512"
+      ansible.builtin.get_url:
+        url: "{{ es_installer_sha_url }}"
+        dest: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.sha512"
+        mode: '0440'
+      tags:
+        - create
 
-- name: "Get sha256 sum of downloaded installer"
-  ansible.builtin.stat:
-    path: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
-    checksum_algorithm: sha512
-    get_checksum: true
-  register: file_stat
-  tags:
-    - create
+    - name: "Get sha256 sum of downloaded installer"
+      ansible.builtin.stat:
+        path: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
+        checksum_algorithm: sha512
+        get_checksum: true
+      register: file_stat
+      tags:
+        - create
 
-- name: "Register file hash"
-  ansible.builtin.shell:
-    cmd: "cat {{ tmp_dir }}/elasticsearch-{{ es_version }}.sha512 | awk '{print $1}'"
-  register: file_hash
-  tags:
-    - create
+    - name: "Register file hash"
+      ansible.builtin.shell:
+        cmd: "cat {{ tmp_dir }}/elasticsearch-{{ es_version }}.sha512 | awk '{print $1}'"
+      register: file_hash
+      tags:
+        - create
 
-- name: "Print hashes"
-  ansible.builtin.debug:
-    msg: "File Contents: >{{ file_hash.stdout }}< File Hash >{{ file_stat.stat.checksum }}<"
-  tags:
-    - create
+    - name: "Print hashes"
+      ansible.builtin.debug:
+        msg: "File Contents: >{{ file_hash.stdout }}< File Hash >{{ file_stat.stat.checksum }}<"
+      tags:
+        - create
 
-- name: "Verify sha256sum of download before execution"
-  ansible.builtin.fail:
-    msg: "Failure, file is not correct."
-  when: file_stat.stat.checksum != file_hash.stdout
-  tags:
-    - create
+    - name: "Verify sha512sum of download before execution"
+      ansible.builtin.fail:
+        msg: "Failure, file is not correct."
+      when: file_stat.stat.checksum != file_hash.stdout and inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
+      tags:
+        - create
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
+  
 
 - name: "Disable IPV6"
   ansible.posix.sysctl:
@@ -103,12 +106,6 @@
   tags:
     - create
 
-- name: "Print installer output"
-  ansible.builtin.debug:
-    msg: "{{ install_out }}.split('\n') }}"
-  tags:
-    - create
-
 - name: "Deploy elasticsearch.yml Jinja2 template"
   ansible.builtin.template:
     backup: true
@@ -133,85 +130,47 @@
     - certs
   when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
 
-#- name: "Ensure certs directory exists on Kibana servers"
-#  ansible.builtin.file:
-#    path: "/etc/kibana/certs"
-#    state: "directory"
+#- name: "Deploy _instances.yml templates"
+#  ansible.builtin.template:
+#    src: "transport_instances.yml.j2"
+#    dest: "{{ es_cert_dir }}/transport_instances.yml"
 #    owner: "root"
-#    group: "kibana"
-#    mode: "0770"
+#    group: "elasticsearch"
+#    mode: "0644"
+#  when: inventory_hostname in groups['certnode']
+#  tags:
+#    - create
+#    - deploy_instances
+#    - certs
+#
+#- name: "Deploy _instances.yml templates"
+#  ansible.builtin.template:
+#    src: "http_instances.yml.j2"
+#    dest: "{{ es_cert_dir }}/http_instances.yml"
+#    owner: "root"
+#    group: "elasticsearch"
+#    mode: "0644"
+#  when: inventory_hostname in groups['certnode']
+#  tags:
+#    - create
+#    - deploy_instances
+#    - certs
+
+
+#- name: "Include role to create certificates"
+#  include_role:
+#    name: "../roles/manage_certs"
+#  when: inventory_hostname in groups['certnode']
 #  tags:
 #    - create
 #    - certs
-#  when: inventory_hostname in groups['kibana_nodes']
 
-
-#####################################################################################################
-# Create new certificate authority pcks12 and pem files
-#####################################################################################################
-# - name: "Create certificate authority pkcs12 on certificate node"
-#   ansible.builtin.shell:
-#     cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --pass {{ TLS_Pass }} --out {{ es_cert_dir }}/{{ cluster_name }}_ca.p12"
-#     creates: "{{ es_cert_dir }}/{{ cluster_name }}_ca.p12"
+# - name: "Include tasks to create certificates"
+#   include_tasks: create_certs.yml
 #   when: inventory_hostname in groups['certnode']
 #   tags:
 #     - create
 #     - certs
-#     - create_ca
-# 
-# - name: "Convert certificate authority pkcs12 to pem on certificate node"
-#   ansible.builtin.shell:
-#     cmd: "openssl pkcs12 -in {{ es_cert_dir }}/{{ cluster_name }}_ca.p12 -out {{ es_cert_dir }}/{{ cluster_name }}_ca.pem -passin pass:{{ TLS_Pass }} -passout pass:{{ TLS_Pass }}"
-#     creates: "{{ es_cert_dir }}/{{ cluster_name }}_ca.pem"
-#   when: inventory_hostname in groups['certnode']
-#   tags:
-#     - create
-#     - certs
-#     - create_ca
-
-#####################################################################################################
-# Deploy instances files to certificate node
-# transport_instances.yml.j2 to generate transport_instances.yml and certs
-# http_instances.yml.j2 to generate http_instances.yml and certs
-#####################################################################################################
-- name: "Deploy _instances.yml templates"
-  ansible.builtin.template:
-    src: "transport_instances.yml.j2"
-    dest: "{{ es_cert_dir }}/transport_instances.yml"
-    owner: "root"
-    group: "elasticsearch"
-    mode: "0644"
-  # with_items:
-  #   - "{{ 'transport_instances.yml.j2' }}"
-  #   - "{{ 'http_instances.yml.j2' }}"
-  when: inventory_hostname in groups['certnode']
-  tags:
-    - create
-    - deploy_instances
-    - certs
-
-- name: "Deploy _instances.yml templates"
-  ansible.builtin.template:
-    src: "http_instances.yml.j2"
-    dest: "{{ es_cert_dir }}/http_instances.yml"
-    owner: "root"
-    group: "elasticsearch"
-    mode: "0644"
-  # with_items:
-  #   - "{{ 'transport_instances.yml.j2' }}"
-  #   - "{{ 'http_instances.yml.j2' }}"
-  when: inventory_hostname in groups['certnode']
-  tags:
-    - create
-    - deploy_instances
-    - certs
-
-- name: "Include tasks to create certificates"
-  include_tasks: create_certs.yml
-  when: inventory_hostname in groups['certnode']
-  tags:
-    - create
-    - certs
 
 - name: "Store certificate password in xpack stores"
   ansible.builtin.shell:
@@ -220,7 +179,7 @@
     - "{{ 'xpack.security.transport.ssl.keystore.secure_password' }}"
     - "{{ 'xpack.security.transport.ssl.truststore.secure_password' }}"
     - "{{ 'xpack.security.http.ssl.keystore.secure_password' }}"
-  when: inventory_hostname in groups['elastic_nodes']
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
   tags:
     - create
     - certs
@@ -229,6 +188,7 @@
   ansible.builtin.lineinfile:
     path: /etc/elasticsearch/jvm.options
     line: '{{ item.line }}'
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
   loop:
     - { line: '-Djava.net.preferIPv4Stack=true' }
   tags:
@@ -238,6 +198,7 @@
   ansible.builtin.systemd:
     enabled: true
     name: "elasticsearch.service"
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
   tags:
     - create
 
@@ -245,5 +206,6 @@
   ansible.builtin.systemd:
     state: restarted
     name: elasticsearch.service
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
   tags:
     - create

@@ -1,3 +1,5 @@
+---
+
 - name: Cleanup before we start
   hosts: certnode
   gather_facts: false
@@ -9,6 +11,8 @@
   gather_facts: true
   roles:
     - roles/manage_vms
+    # tags:
+    #   - create_vms
     
 - name: Provision Proxmox VM's
   hosts: 
@@ -22,8 +26,19 @@
   become_user: root
   gather_facts: false
   roles:
-    - roles/provision_vms
+    # role: roles/provision_vms
+    # tags:
+    #   - create_vms
     
+- name: Create and distribute Certificates
+  hosts:
+    - elastic_nodes
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/manage_certs
 
 - name: Install Elasticsearch
   hosts: 
