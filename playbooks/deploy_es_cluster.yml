@@ -26,13 +26,21 @@
   become_user: root
   gather_facts: false
   roles:
-    # role: roles/provision_vms
-    # tags:
-    #   - create_vms
-    
-- name: Create and distribute Certificates
+    - roles/provision_vms
+
+- name: Install Elasticsearch
+  hosts: 
+    - seed_nodes
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/install_elastic
+
+- name: Create and distribute Certificates to seed nodes
   hosts:
-    - elastic_nodes
+    - seed_nodes
   become: yes
   become_method: sudo
   become_user: root
@@ -40,22 +48,22 @@
   roles:
     - roles/manage_certs
 
-- name: Install Elasticsearch
+- name: Start Elasticsearch Seed Nodes
   hosts: 
-    - elastic_nodes
+    - seed_nodes
   become: yes
   become_method: sudo
   become_user: root
   gather_facts: false
   roles:
-    - roles/install_elastic
-    
-#- name: Push Certificates
-#  hosts: certnode
-#  gather_facts: false
-#  roles:
-#    - roles/push_certs
+    - roles/start_elastic
 
+# - name: Push Certificates
+#   hosts: certnode
+#   gather_facts: false
+#   roles:
+#     - roles/push_certs
+ 
 - name: Create Cluster Token
   hosts:
     - master_nodes
@@ -66,22 +74,6 @@
   roles:
     - roles/manage_access
 
-- name: Install Kibana
-  hosts: 
-    - kibana_nodes
-  become: yes
-  become_method: sudo
-  become_user: root
-  gather_facts: true
-  roles:
-    - roles/install_kibana
-
-#- name: Cleanup when we're done
-#  hosts: certnode
-#  gather_facts: false
-#  roles:
-#    - roles/cleanup
-
 - name: Get Cluster Status
   hosts: 
     - master_nodes
@@ -91,3 +83,21 @@
   gather_facts: false
   roles:
     - roles/get_cluster_status
+
+- name: Install Kibana
+  hosts: 
+    - kibana_nodes
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/install_kibana
+
+#- name: Cleanup when we're done
+#  hosts: certnode
+#  gather_facts: false
+#  roles:
+#    - roles/cleanup
+
+

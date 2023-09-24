@@ -236,8 +236,8 @@
 
 - name: "Generate key file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -info -in {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -nodes -nocerts -out {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
-    creates: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    cmd: "openssl pkcs12 -info -in {{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.p12 -passin pass:{{ TLS_Pass }} -nodes -nocerts -out {{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.key"
+    creates: "{{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.key"
   tags:
     - create
     - install_kib
@@ -245,7 +245,7 @@
 
 - name: "Set permissions on key file"
   ansible.builtin.file:
-    path: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.key"
+    path: "{{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.key"
     owner: "root"
     group: "kibana"
     mode: "0660"
@@ -256,8 +256,8 @@
 
 - name: "Generate .pem file"
   ansible.builtin.shell:
-    cmd: "openssl pkcs12 -in {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.p12 -passin pass:{{ TLS_Pass }} -out {{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem -nodes -clcerts"
-    creates: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
+    cmd: "openssl pkcs12 -in {{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.p12 -passin pass:{{ TLS_Pass }} -out {{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.pem -nodes -clcerts"
+    creates: "{{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.pem"
   tags:
     - create
     - install_kib
@@ -265,7 +265,7 @@
 
 - name: "Set permissions on .pem file"
   ansible.builtin.file:
-    path: "{{ es_cert_dir }}/http/{{ ansible_nodename }}/{{ ansible_nodename }}.pem"
+    path: "{{ es_cert_dir }}/http/{{ inventory_hostname }}/{{ inventory_hostname }}.pem"
     owner: "root"
     group: "kibana"
     mode: "0660"

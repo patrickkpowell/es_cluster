@@ -1,11 +1,117 @@
 ---
 
+- name: "Download and install binaries on certnode for certutil block"
+  block:
+
+    - name: "Import elastic rpm key"
+      ansible.builtin.rpm_key:
+        state: 'present'
+        key: 'https://artifacts.elastic.co/GPG-KEY-elasticsearch'
+      tags:
+        - create
+
+    - name: Print installer download locations
+      ansible.builtin.debug:
+        msg: "Downloading from: >{{ es_installer_url }}< To: >{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm<"
+      tags:
+        - create
+
+    - name: "Check if file has already been downloaded"
+      ansible.builtin.stat:
+        path: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
+      register: es_file_exist
+      tags:
+        - create
+
+    - name: "Download installer"
+      ansible.builtin.get_url:
+        url: "{{ es_installer_url }}"
+        dest: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
+        mode: '0440'
+        validate_certs: false
+      tags:
+        - create
+
+    - name: "Download sha512"
+      ansible.builtin.get_url:
+        url: "{{ es_installer_sha_url }}"
+        dest: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.sha512"
+        mode: '0440'
+      tags:
+        - create
+
+    - name: "Get sha256 sum of downloaded installer"
+      ansible.builtin.stat:
+        path: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
+        checksum_algorithm: sha512
+        get_checksum: true
+      register: file_stat
+      tags:
+        - create
+
+    - name: "Register file hash"
+      ansible.builtin.shell:
+        cmd: "cat {{ tmp_dir }}/elasticsearch-{{ es_version }}.sha512 | awk '{print $1}'"
+      register: file_hash
+      tags:
+        - create
+
+    - name: "Print hashes"
+      ansible.builtin.debug:
+        msg: "File Contents: >{{ file_hash.stdout }}< File Hash >{{ file_stat.stat.checksum }}<"
+      tags:
+        - create
+
+    - name: "Verify sha512sum of download before execution"
+      ansible.builtin.fail:
+        msg: "Failure, file is not correct."
+      when: file_stat.stat.checksum != file_hash.stdout and inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
+      tags:
+        - create
+
+    - name: "Install elastic package"
+      ansible.builtin.yum:
+        name: "{{ tmp_dir }}/elasticsearch-{{ es_version }}.rpm"
+        state: present
+      register: install_out
+      tags:
+        - create
+
+    #- name: "Deploy elasticsearch.yml Jinja2 template"
+    #  ansible.builtin.template:
+    #    backup: true
+    #    src: "elasticsearch.yml.j2"
+    #    dest: "/etc/elasticsearch/elasticsearch.yml"
+    #    owner: "root"
+    #    group: "elasticsearch"
+    #  tags:
+    #    - create
+    #    - debug
+  when: inventory_hostname in groups['certnode']
+
+- name: "Ensure {{ es_cert_dir }} exists"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0770'
+    owner: "root"
+    # group: "{{ svc_group }}"
+  when: inventory_hostname in groups['elastic_nodes']
+  loop: 
+    - "{{ es_cert_dir }}"
+    - "{{ es_cert_dir }}/transport"
+    - "{{ es_cert_dir }}/http"
+    - "{{ es_cert_dir }}/fleet"
+  tags: 
+    - create
+    - certs
+
 - name: "Deploy _instances.yml templates"
   ansible.builtin.template:
     src: "transport_instances.yml.j2"
     dest: "{{ es_cert_dir }}/transport_instances.yml"
     owner: "root"
-    group: "elasticsearch"
+    # group: "elasticsearch"
     mode: "0644"
   when: inventory_hostname in groups['certnode']
   tags:
@@ -18,7 +124,7 @@
     src: "http_instances.yml.j2"
     dest: "{{ es_cert_dir }}/http_instances.yml"
     owner: "root"
-    group: "elasticsearch"
+    # group: "elasticsearch"
     mode: "0644"
   when: inventory_hostname in groups['certnode']
   tags:
@@ -95,7 +201,7 @@
     src: "{{ tmp_dir }}/{{ cluster_name }}{{ item }}"
     dest: "{{ es_cert_dir }}/"
     owner: "root"
-    group: "{{ svc_group }}"
+    # group: "{{ svc_group }}"
     mode: "0660"
   with_items:
     - "{{ '_certs_pkcs12.zip' }}"
@@ -184,5 +290,5 @@
     state: directory
     mode: '0770'
     owner: "root"
-    group: "{{ svc_group }}"
+    # group: "{{ svc_group }}"
   when: inventory_hostname in groups['elastic_nodes']
