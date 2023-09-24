@@ -4,6 +4,7 @@
   ansible.builtin.shell:
     cmd: "/usr/share/elasticsearch/bin/elasticsearch-reset-password -u {{kib_user}} -ab | awk -F': ' '{print $2}'"
   register: kib_password
+  when: inventory_hostname in groups['cert_node'] 
   tags:
     - create
     - debug

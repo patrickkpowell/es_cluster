@@ -16,7 +16,7 @@
     validate_certs: false
   register: response
   with_items:
-    - "{{groups['certnode']}}"
+    - "{{groups['cert_node']}}"
   tags: 
     - create
     - status

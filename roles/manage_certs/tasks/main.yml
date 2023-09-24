@@ -1,6 +1,6 @@
 ---
 
-- name: "Download and install binaries on certnode for certutil block"
+- name: "Download and install binaries on cert_node for certutil block"
   block:
 
     - name: "Import elastic rpm key"
@@ -87,7 +87,7 @@
     #  tags:
     #    - create
     #    - debug
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
 
 - name: "Ensure {{ es_cert_dir }} exists"
   ansible.builtin.file:
@@ -113,7 +113,7 @@
     owner: "root"
     # group: "elasticsearch"
     mode: "0644"
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   tags:
     - create
     - deploy_instances
@@ -126,7 +126,7 @@
     owner: "root"
     # group: "elasticsearch"
     mode: "0644"
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   tags:
     - create
     - deploy_instances
@@ -136,7 +136,7 @@
   ansible.builtin.shell:
     cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca -s --pass {{ TLS_Pass }} --out {{ es_cert_dir }}/{{ cluster_name }}_ca.p12"
     creates: "{{ es_cert_dir }}/{{ cluster_name }}_ca.p12"
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   tags:
     - create
     - certs
@@ -146,7 +146,7 @@
   ansible.builtin.shell:
     cmd: "openssl pkcs12 -in {{ es_cert_dir }}/{{ cluster_name }}_ca.p12 -out {{ es_cert_dir }}/{{ cluster_name }}_ca.pem -passin pass:{{ TLS_Pass }} -passout pass:{{ TLS_Pass }}"
     creates: "{{ es_cert_dir }}/{{ cluster_name }}_ca.pem"
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   tags:
     - create
     - certs
@@ -156,7 +156,7 @@
   ansible.builtin.shell:
     cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert -s --pass {{ TLS_Pass }} --ca {{ es_cert_dir }}/{{ cluster_name }}_ca.p12 --in {{ es_cert_dir }}/transport_instances.yml --out {{ es_cert_dir }}/{{ cluster_name }}_certs_pkcs12.zip"
     creates: "{{ es_cert_dir }}/{{ cluster_name }}_certs_pkcs12.zip"
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   tags:
     - create
     - certs
@@ -165,7 +165,7 @@
   ansible.builtin.shell:
     cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert -s --pass {{ TLS_Pass }} --ca {{ es_cert_dir }}/{{ cluster_name }}_ca.p12 --in {{ es_cert_dir }}/http_instances.yml --out {{ es_cert_dir }}/{{ cluster_name }}_http_certificates.zip"
     creates: "{{ es_cert_dir }}/{{ cluster_name }}_http_certificates.zip"
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   tags:
     - create
     - certs
@@ -174,7 +174,7 @@
   ansible.builtin.shell:
     cmd: "echo {{ TLS_Pass }} | /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -ca {{ es_cert_dir }}/{{ cluster_name }}_ca.p12 --out {{ es_cert_dir }}/{{ cluster_name }}_fleet.zip -name fl01.powellcompanies.com"
     creates: "{{ es_cert_dir }}/{{ cluster_name }}_fleet.zip"
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   tags:
     - create
     - certs
@@ -184,7 +184,7 @@
     src: "{{ es_cert_dir }}/{{ cluster_name }}{{ item }}"
     dest: "{{ tmp_dir }}/"
     flat: true
-  when: inventory_hostname in groups['certnode']
+  when: inventory_hostname in groups['cert_node']
   with_items:
     - "{{ '_certs_pkcs12.zip' }}"
     - "{{ '_http_certificates.zip' }}"

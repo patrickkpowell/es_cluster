@@ -24,7 +24,7 @@ all:
 proxmox:
   hosts:
     pve.powellcompanies.com:
-certnode:
+cert_node:
   hosts:
     es02.powellcompanies.com:
 data_nodes:

@@ -2,7 +2,9 @@
 
 - name: "Wait for SSH"
   ansible.builtin.wait_for_connection:
-
+  tags:
+    - create
+    
 - name: "Import elastic rpm key"
   ansible.builtin.rpm_key:
     state: 'present'

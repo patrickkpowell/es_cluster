@@ -1,7 +1,7 @@
 ---
 
 - name: Cleanup before we start
-  hosts: certnode
+  hosts: cert_node
   gather_facts: false
   roles:
     - roles/cleanup
@@ -56,17 +56,17 @@
   become_user: root
   gather_facts: false
   roles:
-    - roles/start_elastic
+    - roles/start_stop_elastic
 
 # - name: Push Certificates
-#   hosts: certnode
+#   hosts: cert_node
 #   gather_facts: false
 #   roles:
 #     - roles/push_certs
  
 - name: Create Cluster Token
   hosts:
-    - master_nodes
+    - cert_node
   become: yes
   become_method: sudo
   become_user: root
@@ -94,10 +94,20 @@
   roles:
     - roles/install_kibana
 
-#- name: Cleanup when we're done
-#  hosts: certnode
-#  gather_facts: false
-#  roles:
-#    - roles/cleanup
+- name: Install elastic_agent
+  hosts: 
+    - elastic_nodes
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/install_agents
+
+- name: Cleanup when we're done
+  hosts: cert_node
+  gather_facts: false
+  roles:
+    - roles/cleanup
 
 

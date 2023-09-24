@@ -3,6 +3,8 @@
 
 - name: "Wait for SSH"
   ansible.builtin.wait_for_connection:
+  tags:
+    - create
 
 - name: "Import elastic rpm key"
   ansible.builtin.rpm_key:
@@ -138,7 +140,7 @@
 #    owner: "root"
 #    group: "elasticsearch"
 #    mode: "0644"
-#  when: inventory_hostname in groups['certnode']
+#  when: inventory_hostname in groups['cert_node']
 #  tags:
 #    - create
 #    - deploy_instances
@@ -151,7 +153,7 @@
 #    owner: "root"
 #    group: "elasticsearch"
 #    mode: "0644"
-#  when: inventory_hostname in groups['certnode']
+#  when: inventory_hostname in groups['cert_node']
 #  tags:
 #    - create
 #    - deploy_instances
@@ -161,14 +163,14 @@
 #- name: "Include role to create certificates"
 #  include_role:
 #    name: "../roles/manage_certs"
-#  when: inventory_hostname in groups['certnode']
+#  when: inventory_hostname in groups['cert_node']
 #  tags:
 #    - create
 #    - certs
 
 # - name: "Include tasks to create certificates"
 #   include_tasks: create_certs.yml
-#   when: inventory_hostname in groups['certnode']
+#   when: inventory_hostname in groups['cert_node']
 #   tags:
 #     - create
 #     - certs
