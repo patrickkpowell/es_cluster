@@ -7,5 +7,6 @@ hosts.yml
 roles/create_cluster_token
 roles/join_cluster
 group_vars/vault_strings.yml
+group_vars/vault.yml
 clean_certs.sh
 !/.gitignore

@@ -9,8 +9,6 @@
 
 - name: Create a Proxmox VM's
   hosts: proxmox
-  # vars_files:
-  #   - group_vars1/secret_vars.yml
   gather_facts: true
   roles:
     - roles/manage_vms
@@ -65,16 +63,6 @@
 #   roles:
 #     - roles/push_certs
  
-- name: Create Cluster Token
-  hosts:
-    - cert_node
-  become: yes
-  become_method: sudo
-  become_user: root
-  gather_facts: false
-  roles:
-    - roles/manage_access
-
 - name: Get Cluster Status
   hosts: 
     - master_nodes
@@ -84,6 +72,16 @@
   gather_facts: false
   roles:
     - roles/get_cluster_status
+
+- name: Create Cluster Token
+  hosts:
+    - cert_node
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  roles:
+    - roles/manage_access
 
 - name: Install Kibana
   hosts: 

@@ -29,23 +29,19 @@
     method: POST
     url: "https://{{ inventory_hostname }}:9200/_security/user/{{ item.username }}"
     user: "elastic"
-    password: "4iZgeosmnMld+uL1focp"
+    password: "{{ elasticpass.stdout }}"
     body: "{{ item | to_json }}"
     validate_certs: false
     body_format: json
   when: inventory_hostname in groups['cert_node']
   register: es_return
-  loop:
-    - { username: 'ppowell', password: '4iZgeosmnMld+uL1focp', roles: [ 'superuser' ], full_name: 'Patrick Powell', email: 'patrick.powell@elastic.co' }
-  # delegate_to:
-  #   localhost
+  with_items:
+    - "{{ admin_users }}"
   tags:
     - create
-    - debug
 
 - name: "Print es_return"
   ansible.builtin.debug:
     msg: '{{es_return}}'
   tags:
-    - create
     - debug
