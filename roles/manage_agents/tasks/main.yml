@@ -1,0 +1,21 @@
+---
+# tasks file for roles/manag_agents
+
+# TODO: Set Fleet Output Settings
+# TODO: Create Fleet Server Policy
+
+- name: "Deploy enroll-fleet-agent templates"
+  ansible.builtin.template:
+    src: "enroll-fleet-agent.sh.j2"
+    dest: "{{ tmp_dir }}/enroll-fleet-agent.sh"
+    mode: '0755'
+  tags:
+    - create
+    - fleet
+
+- name: "Execute fleet enroll script"
+  ansible.builtin.shell:
+    cmd: "yes | {{ tmp_dir }}/enroll-fleet-agent.sh"
+  tags:
+    - create
+    - fleet

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# rpm -vi {{ tmp_dir }}/elastic_agent-{{ es_version }}.rpm
+systemctl stop elastic-agent
+elastic-agent enroll --url=https://fl01.powellcompanies.com:8220 \
+  --fleet-server-es=https://es01.powellcompanies.com:9200 \
+  --fleet-server-service-token=AAEAAWVsYXN0aWMvZmxlZXQtc2VydmVyL3Rva2VuLTE2OTU2NzkyNjM1MTE6Zkd3QTJPYmxUUFNnZ080cEJnbzNXQQ \
+  --fleet-server-policy=fleet-server-policy \
+  --certificate-authorities={{ es_cert_dir }}/{{ cluster_name }}_ca.pem \
+  --fleet-server-es-ca={{ es_cert_dir }}/{{ cluster_name }}_ca.pem \
+  --fleet-server-cert={{ es_cert_dir }}/fleet/{{ inventory_hostname }}/{{ inventory_hostname }}.crt \
+  --fleet-server-cert-key={{ es_cert_dir }}/fleet/{{ inventory_hostname }}/{{ inventory_hostname }}.key \
+  --fleet-server-port=8220 --insecure
+systemctl enable elastic-agent
+systemctl start elastic-agent
