@@ -1,6 +1,24 @@
 ---
 # tasks file for roles/cleanup
 
+# - name: "Print variables in group_vars/all.yml"
+#   debug:
+#     msg: "{{ item }}"
+#   with_items:
+#     - "{{ api_user }}"
+#     - "{{ api_pass }}"
+#     - "{{ api_port }}"
+#     - "{{ vm_node }}"
+#     - "{{ api_host }}"
+#     - "{{ vm_cores }}"
+#     - "{{ vm_memory }}"
+#     - "{{ vm_disk_size }}"
+#     - "{{ TLS_Pass }}"
+#   tags:
+#     - create
+#     - install_es
+#     - debug
+
 - name: "Remove locally fetched certificates"
   ansible.builtin.file:
     # path: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"

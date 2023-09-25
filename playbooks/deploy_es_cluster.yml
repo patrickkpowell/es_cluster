@@ -1,5 +1,6 @@
 ---
 
+
 - name: Cleanup before we start
   hosts: cert_node
   gather_facts: false
@@ -8,11 +9,11 @@
 
 - name: Create a Proxmox VM's
   hosts: proxmox
+  # vars_files:
+  #   - group_vars1/secret_vars.yml
   gather_facts: true
   roles:
     - roles/manage_vms
-    # tags:
-    #   - create_vms
     
 - name: Provision Proxmox VM's
   hosts: 

@@ -2,6 +2,13 @@
 
 # tasks file for roles/deploy_vms
 
+- name: "print api_user"
+  debug:
+    msg: "{{ api_user }}"
+  tags: 
+    - create
+    - delpoy_vms
+
 # - name: "Deploy es Hosts"
 - name: "Deploy es Hosts"
   community.general.proxmox_kvm:
