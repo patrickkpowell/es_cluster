@@ -29,6 +29,8 @@ Clean up generated certificates after install so they don't interfiere with subs
 
 Requirements
 ------------
+To deploy to existing machines do not run manage_vms or provision_vms
+
 To deploy from a Proxmox server you will need the community.general.proxmox_* ansible modules
 
 Need to use ansible vault to generate values for variables.  See defaults/main.yml for example.  It is reccomended that these be overridden in group_vars/all.
