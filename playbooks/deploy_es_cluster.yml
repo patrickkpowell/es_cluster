@@ -73,7 +73,7 @@
   roles:
     - roles/get_cluster_status
 
-- name: Create Cluster Token
+- name: Create Users
   hosts:
     - cert_node
   become: yes
