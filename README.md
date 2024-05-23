@@ -192,7 +192,7 @@ seed_nodes:
 elastic_nodes:
   vars:
     artifact_repo_base_url: "http://artifacts.domain.com/elasticsearch"
-    es_version: "8.10.2"
+    es_version: "8.13.4"
     kib_url: "https://kib01.domain.com:5601"
     es_cert_dir: "/etc/elasticsearch/certs"
     es_installer_url: "{{ artifact_repo_base_url }}/elasticsearch-{{ es_version }}-x86_64.rpm"

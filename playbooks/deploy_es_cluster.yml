@@ -93,25 +93,25 @@
   roles:
     - roles/install_kibana
 
-- name: Install elastic_agent
-  hosts: 
-    - elastic_nodes
-  become: yes
-  become_method: sudo
-  become_user: root
-  gather_facts: false
-  roles:
-    - roles/install_agents
-
-- name: Create and distribute Certificates to all nodes
-  hosts:
-    - elastic_nodes
-  become: yes
-  become_method: sudo
-  become_user: root
-  gather_facts: false
-  roles:
-    - roles/manage_certs
+# - name: Install elastic_agent
+#   hosts: 
+#     - elastic_nodes
+#   become: yes
+#   become_method: sudo
+#   become_user: root
+#   gather_facts: false
+#   roles:
+#     - roles/install_agents
+# 
+# - name: Create and distribute Certificates to all nodes
+#   hosts:
+#     - elastic_nodes
+#   become: yes
+#   become_method: sudo
+#   become_user: root
+#   gather_facts: false
+#   roles:
+#     - roles/manage_certs
 
 - name: Cleanup when we're done
   hosts: cert_node

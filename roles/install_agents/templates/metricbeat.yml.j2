@@ -66,7 +66,8 @@ setup.kibana:
   # IPv6 addresses should always be defined as: https://[2001:db8::1]:5601
   host: "https://kib01.powellcompanies.com:5601"
   username: "kibana"
-  password: "lR*mOeCGDExhL*6V9x4L"
+  # password: "lR*mOeCGDExhL*6V9x4L"
+  password: "{{ kib_password }}"
 
   # Kibana Space ID
   # ID of the Kibana Space into which the dashboards should be loaded. By default,

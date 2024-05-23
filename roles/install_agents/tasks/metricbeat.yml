@@ -14,13 +14,13 @@
 
 - name: Print installer download locations
   ansible.builtin.debug:
-    msg: "Downloading from: >{{ metricbeat_installer_url }}< To: >{{ tmp_dir }}/metricbeat.rpm<"
+    msg: "Downloading from: >{{ metricbeat_installer_url }}< To: >{{ tmp_dir }}/metricbeat-{{ es_version }}.rpm<"
   tags:
     - create
 
 - name: "Check if file has already been downloaded"
   ansible.builtin.stat:
-    path: "{{ tmp_dir }}/metricbeat.rpm"
+    path: "{{ tmp_dir }}/metricbeat-{{ es_version }}.rpm"
   register: mb_file_exist
   tags:
     - create
@@ -28,7 +28,7 @@
 - name: "Download installer"
   ansible.builtin.get_url:
     url: "{{ metricbeat_installer_url }}"
-    dest: "{{ tmp_dir }}/metricbeat.rpm"
+    dest: "{{ tmp_dir }}/metricbeat-{{ es_version }}.rpm"
     mode: '0440'
     validate_certs: false
   when: mb_file_exist.stat.exists == False
@@ -38,14 +38,14 @@
 - name: "Download sha512"
   ansible.builtin.get_url:
     url: "{{ metricbeat_installer_sha_url }}"
-    dest: "{{ tmp_dir }}/metricbeat.sha512"
+    dest: "{{ tmp_dir }}/metricbeat-{{ es_version }}.rpm.sha512"
     mode: '0440'
   tags:
     - create
 
 - name: "Get sha256 sum of downloaded installer"
   ansible.builtin.stat:
-    path: "{{ tmp_dir }}/metricbeat.rpm"
+    path: "{{ tmp_dir }}/metricbeat-{{ es_version }}.rpm"
     checksum_algorithm: sha512
     get_checksum: true
   register: file_stat
@@ -54,7 +54,7 @@
 
 - name: "Register file hash"
   ansible.builtin.shell:
-    cmd: "cat {{ tmp_dir }}/metricbeat.sha512 | awk '{print $1}'"
+    cmd: "cat {{ tmp_dir }}/metricbeat-{{ es_version }}.rpm.sha512 | awk '{print $1}'"
   register: file_hash
   tags:
     - create
@@ -74,7 +74,7 @@
 
 - name: "Install metricbeat"
   ansible.builtin.yum:
-    name: "{{ tmp_dir }}/metricbeat.rpm"
+    name: "{{ tmp_dir }}/metricbeat-{{ es_version }}.rpm"
     state: present
   tags:
     - create
@@ -82,7 +82,7 @@
 - name: "Configure metricbeat"
   ansible.builtin.template:
     src: "metricbeat.yml.j2"
-    dest: "/etc/metricbeat/metricbeat.yml"
+    dest: "/etc/metricbeat/metricbeat-{{ es_version }}.yml"
     owner: root
     group: root
     mode: '0644'
