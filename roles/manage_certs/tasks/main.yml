@@ -97,12 +97,12 @@
     owner: "root"
     # group: "{{ svc_group }}"
   when: inventory_hostname in groups['elastic_nodes']
-  loop: 
+  loop:
     - "{{ es_cert_dir }}"
     - "{{ es_cert_dir }}/transport"
     - "{{ es_cert_dir }}/http"
     - "{{ es_cert_dir }}/fleet"
-  tags: 
+  tags:
     - create
     - certs
 

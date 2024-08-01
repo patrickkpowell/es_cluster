@@ -1,0 +1,104 @@
+all:
+  vars:
+    cluster_name: "tftf-cluster"
+    es_cert_dir: "/etc/elasticsearch/certs"
+    tmp_dir: "/tmp"
+    TLS_Pass: "LKADJF_9efjsIsfsj"
+  hosts:
+    localhost:
+      localhost ansible_connection: 'local'
+      ansible_host: 127.0.0.1
+    tftf1.powellcompanies.com:
+      ansible_host: 192.168.3.206
+    tftf2.powellcompanies.com:
+      ansible_host: 192.168.3.207
+    tftf3.powellcompanies.com:
+      ansible_host: 192.168.3.208
+    tftfk.powellcompanies.com:
+      ansible_host: 192.168.3.209
+data_nodes:
+  vars:
+    roles: ['data', 'ingest', 'remote_cluster_client']
+    svc_group: 'elasticsearch'
+  hosts:
+    tftf1.powellcompanies.com:
+    tftf2.powellcompanies.com:
+    tftf3.powellcompanies.com:
+master_nodes:
+  vars:
+    roles: ['master']
+    svc_group: 'elasticsearch'
+  hosts:
+    tftf1.powellcompanies.com:
+seed_nodes:
+  children:
+    data_nodes:
+    master_nodes:
+cert_node:
+  hosts:
+    tftf1.powellcompanies.com:
+ml_nodes:
+elastic_nodes:
+  vars:
+    #artifact_repo_base_url: "http://artifacts.powellcompanies.com/elasticsearch"
+    artifact_repo_base_url: "https://artifacts.elastic.co/downloads"
+    es_version: "8.14.1"
+    kib_url: "https://kib01.powellcompanies.com:5601"
+    es_cert_dir: "/etc/elasticsearch/certs"
+    es_installer_url: "{{ artifact_repo_base_url }}/elasticsearch/elasticsearch-{{ es_version }}-x86_64.rpm"
+    es_installer_sha_url: "{{ artifact_repo_base_url }}/elasticsearch/elasticsearch-{{ es_version }}-x86_64.rpm.sha512"
+    kib_installer_url: "{{ artifact_repo_base_url }}/kibana/kibana-{{ es_version }}-x86_64.rpm"
+    kib_installer_sha_url: "{{ artifact_repo_base_url }}/kibana/kibana-{{ es_version }}-x86_64.rpm.sha512"
+    elastic_agent_installer_url: "{{ artifact_repo_base_url }}/elastic-agent-{{ es_version }}-x86_64.rpm"
+    elastic_agent_installer_sha_url: "{{ artifact_repo_base_url }}/elastic-agent-{{ es_version }}-x86_64.rpm.sha512"
+    metricbeat_installer_url: "{{ artifact_repo_base_url }}/metricbeat-{{ es_version }}-x86_64.rpm"
+    metricbeat_installer_sha_url: "{{ artifact_repo_base_url }}/metricbeat-{{ es_version }}-x86_64.rpm.sha512"
+    filebeat_installer_url: "{{ artifact_repo_base_url }}/filebeat-{{ es_version }}-x86_64.rpm"
+    filebeat_installer_sha_url: "{{ artifact_repo_base_url }}/filebeat-{{ es_version }}-x86_64.rpm.sha512"
+    fleet_policy_name: "tftf-fleet-policy"
+    packages:
+      - "qemu-guest-agent"
+      - "yum-utils"
+      - "net-tools"
+      - "mlocate"
+      - "wget"
+      - "zip"
+      - "unzip"
+      - "jq"
+      - "bash-completion"
+      - "bind-utils"
+      - "tar"
+    kib_user: "kibana"
+    cluster_name: "tftf-cluster"
+    tmp_dir: "/tmp/"
+    elastic_home: "/usr/share/elasticsearch"
+    elasticsearch_certutil_bin: "{{ elastic_home }}/bin/elasticsearch-certutil"
+    kibana_home: "/usr/share/kibana"
+    es_data_dir: "/var/lib/elasticsearch"
+    es_log_dir: "/var/log/elasticsearch"
+    es_config_dir: "/etc/elasticsearch"
+    # es_cert_dir: "{{ es_config_dir }}/certs"
+    elasticsearch_certutil_ca_path: "{{ es_config_dir }}/certs/ca"
+    kib_config_dir: "/etc/kibana"
+    es_config_file: "elasticsearch.yml"
+    kib_config_file: "kibana.yml"
+    es_service_name: "elasticsearch"
+    kib_service_name: "kibana"
+  children:
+    data_nodes:
+    master_nodes:
+    ml_nodes:
+    fleet_nodes:
+    kibana_nodes:
+all_es_nodes:
+  children:
+    elastic_nodes:
+    kibana_nodes:
+    ml_nodes:
+    data_nodes:
+    master_nodes:
+kibana_nodes:
+  vars:
+    svc_group: 'kibana'
+  hosts:
+    tftfk.powellcompanies.com:

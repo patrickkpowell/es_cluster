@@ -76,7 +76,7 @@
       tags:
         - create
   when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
-  
+ 
 
 - name: "Disable IPV6"
   ansible.posix.sysctl:
@@ -87,7 +87,7 @@
     - { setting: 'net.ipv6.conf.all.disable_ipv6', value: '1' }
     - { setting: 'net.ipv6.conf.default.disable_ipv6', value: '1' }
     - { setting: 'net.ipv6.conf.lo.disable_ipv6', value: '1' }
-    - { setting: 'net.ipv6.conf.eth0.disable_ipv6', value: '1'}
+    - { setting: 'net.ipv6.conf.ens18.disable_ipv6', value: '1'} # ens18 is the interface name on the VM.  Should be defined as a var.
   tags:
     - create
 
@@ -132,48 +132,6 @@
     - create
     - certs
   when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
-
-#- name: "Deploy _instances.yml templates"
-#  ansible.builtin.template:
-#    src: "transport_instances.yml.j2"
-#    dest: "{{ es_cert_dir }}/transport_instances.yml"
-#    owner: "root"
-#    group: "elasticsearch"
-#    mode: "0644"
-#  when: inventory_hostname in groups['cert_node']
-#  tags:
-#    - create
-#    - deploy_instances
-#    - certs
-#
-#- name: "Deploy _instances.yml templates"
-#  ansible.builtin.template:
-#    src: "http_instances.yml.j2"
-#    dest: "{{ es_cert_dir }}/http_instances.yml"
-#    owner: "root"
-#    group: "elasticsearch"
-#    mode: "0644"
-#  when: inventory_hostname in groups['cert_node']
-#  tags:
-#    - create
-#    - deploy_instances
-#    - certs
-
-
-#- name: "Include role to create certificates"
-#  include_role:
-#    name: "../roles/manage_certs"
-#  when: inventory_hostname in groups['cert_node']
-#  tags:
-#    - create
-#    - certs
-
-# - name: "Include tasks to create certificates"
-#   include_tasks: create_certs.yml
-#   when: inventory_hostname in groups['cert_node']
-#   tags:
-#     - create
-#     - certs
 
 - name: "Store certificate password in xpack stores"
   ansible.builtin.shell:

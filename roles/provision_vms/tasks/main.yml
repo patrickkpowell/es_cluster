@@ -2,28 +2,29 @@
 # tasks file for roles/provision_vms
 # Post VM deployment provisioning
 
-- name: Print hostnames
-  ansible.builtin.debug:
-    msg: '{{ ansible_ssh_host | default(inventory_hostname) }}'
-
 - name: Wait for connection
   ansible.builtin.wait_for_connection:
   tags:
     - create
     - provision_vms
 
-- name: Wait for cloud init to finish
-  community.general.cloud_init_data_facts:
-    filter: status
-  register: result
-  until: "result.cloud_init_data_facts.status.v1.stage is defined and not result.cloud_init_data_facts.status.v1.stage"
-  retries: 1000
-  delay: 5
-  delegate_to: '{{item}}'
-  with_items:
-    - "{{groups['data_nodes']}}"
-    - "{{groups['master_nodes']}}"
-    - "{{groups['kibana_nodes']}}"
+- name: Set hostnames
+  ansible.builtin.hostname:
+    name: '{{ inventory_hostname }}'
+  tags:
+    - create
+    - provision_vms
+
+- name: Print hostnames
+  ansible.builtin.debug:
+    msg: '{{ inventory_hostname }}'
+  tags:
+    - create
+    - provision_vms
+
+- name: Print IPs
+  ansible.builtin.debug:
+    msg: '{{ ansible_ssh_host | default(inventory_hostname) }}'
   tags:
     - create
     - provision_vms

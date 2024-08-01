@@ -20,15 +20,17 @@
     name: "{{item.name}}"
     node: "{{vm_node}}"
     memory: "{{vm_memory}}"
-    timeout: 300
+    timeout: 3000
     state: "present"
     autostart: true
   loop:
     "{{vms}}"
   when: item.type == 'es'
+  register: es_vms
   tags:
     - delpoy_vms
     - create
+
 
 # - name: "Deploy ml Hosts"
 - name: "Deploy ML Hosts"
@@ -47,6 +49,7 @@
   loop:
     "{{vms}}"
   when: item.type == 'ml'
+  register: ml_vms
   tags:
     - delpoy_vms
     - create
@@ -68,6 +71,7 @@
   loop:
     "{{ vms }}"
   when: item.type == 'kib'
+  register: kib_vms
   tags:
     - delpoy_vms
     - create
@@ -88,6 +92,7 @@
   loop:
     "{{ vms }}"
   when: item.type == 'fleet'
+  register: flt_vms
   tags:
     - delpoy_vms
     - create
@@ -106,6 +111,34 @@
     "{{ vms }}"
   tags:
     - destroy
+
+- name: "print es_vms items"
+  debug:
+    msg: "vm-{{ item }}-disk-0"
+  loop: 
+    - "{{ es_vms.results }}"
+    - "{{ ml_vms.results }}"
+    - "{{ kib_vms.results }}"
+    - "{{ flt_vms.results }}"
+  tags: 
+    - create
+    - delpoy_vms
+
+- name: Wait for VMs to be ready
+  wait_for:
+    timeout: 60
+#    delay: 5
+#    state: present
+#    path: "/dev/pve/vm-{{ item.vmid }}-disk-0"
+#  loop:
+#    - "{{ es_vms.results }}"
+#    - "{{ ml_vms.results }}"
+#    - "{{ kib_vms.results }}"
+#    - "{{ flt_vms.results }}"
+#  when: item is success
+  tags:
+    - delpoy_vms
+    - create
 
 - name: Get Facts
   community.general.proxmox_kvm:

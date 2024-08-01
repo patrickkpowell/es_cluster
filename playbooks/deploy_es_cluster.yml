@@ -57,12 +57,6 @@
   roles:
     - roles/start_stop_elastic
 
-# - name: Push Certificates
-#   hosts: cert_node
-#   gather_facts: false
-#   roles:
-#     - roles/push_certs
- 
 - name: Get Cluster Status
   hosts: 
     - master_nodes

@@ -1,6 +1,15 @@
 ---
 # tasks file for start_es
 
+- name: "Stop elasticsearch"
+  ansible.builtin.systemd:
+    state: stopped
+    name: elasticsearch.service
+  when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
+  tags:
+    - create
+    - stop
+
 - name: "Start elasticsearch"
   ansible.builtin.systemd:
     state: started
@@ -32,4 +41,4 @@
     name: elasticsearch.service
   when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
   tags:
-    - start
+    - stop

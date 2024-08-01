@@ -6,3 +6,4 @@
     - 'net-tools'
     - 'mlocate'
     - 'wget'
+    - 'java-11-openjdk-devel'
