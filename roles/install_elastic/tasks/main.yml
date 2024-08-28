@@ -78,26 +78,26 @@
   when: inventory_hostname in groups['data_nodes'] + groups['master_nodes'] + groups['ml_nodes']
  
 
-- name: "Disable IPV6"
-  ansible.posix.sysctl:
-    name: "{{ item.setting }}"
-    value: "{{ item.value }}"
-    sysctl_set: true
-  loop:
-    - { setting: 'net.ipv6.conf.all.disable_ipv6', value: '1' }
-    - { setting: 'net.ipv6.conf.default.disable_ipv6', value: '1' }
-    - { setting: 'net.ipv6.conf.lo.disable_ipv6', value: '1' }
-    - { setting: 'net.ipv6.conf.ens18.disable_ipv6', value: '1'} # ens18 is the interface name on the VM.  Should be defined as a var.
-  tags:
-    - create
+#- name: "Disable IPV6"
+#  ansible.posix.sysctl:
+#    name: "{{ item.setting }}"
+#    value: "{{ item.value }}"
+#    sysctl_set: true
+#  loop:
+#    - { setting: 'net.ipv6.conf.all.disable_ipv6', value: '1' }
+#    - { setting: 'net.ipv6.conf.default.disable_ipv6', value: '1' }
+#    - { setting: 'net.ipv6.conf.lo.disable_ipv6', value: '1' }
+#    - { setting: 'net.ipv6.conf.ens18.disable_ipv6', value: '1'} # ens18 is the interface name on the VM.  Should be defined as a var.
+#  tags:
+#    - create
 
-- name: "Stop and disable firewalld"
-  ansible.builtin.service:
-    name: "firewalld"
-    state: "stopped"
-    enabled: false
-  tags:
-    - create
+#- name: "Stop and disable firewalld"
+#  ansible.builtin.service:
+#    name: "firewalld"
+#    state: "stopped"
+#    enabled: false
+#  tags:
+#    - create
 
 - name: "Install elastic package"
   ansible.builtin.yum:

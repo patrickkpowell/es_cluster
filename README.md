@@ -8,24 +8,23 @@ Set of roles to deploy an Elasticsearch cluster on Proxmox.
 
 ~~Working on kibana installation role.  Currently getting this error.~~
 
-~~```~~
-~~[ERROR][elasticsearch-service] Unable to retrieve version information from Elasticsearch nodes. self signed certificate in certificate chain~~
+~~```
+[ERROR][elasticsearch-service] Unable to retrieve version information from Elasticsearch nodes. self signed certificate in certificate chain
 ~~```~~
 
 ~~Generate CA & certificates.~~
 
+~~Jinja2 template for elasticsearch.yml~~
+
+~~Jinja2 template for JVM Options~~
+
+~~Clean up generated certificates after install so they don't interfiere with subsequent playbook runs~~
 
 TODO:
 
 Set Firewall Rules
 
 Set selinux rules
-
-~~Jinja2 template for elasticsearch.yml~~
-
-Jinja2 template for JVM Options
-
-Clean up generated certificates after install so they don't interfiere with subsequent playbook runs
 
 Requirements
 ------------

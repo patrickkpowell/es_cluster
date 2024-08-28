@@ -2,16 +2,16 @@
 
 
 - name: Cleanup before we start
-  hosts: cert_node
+  hosts: elastic_nodes
   gather_facts: false
   roles:
     - roles/cleanup
 
-- name: Create a Proxmox VM's
-  hosts: proxmox
-  gather_facts: true
-  roles:
-    - roles/manage_vms
+#- name: Create a Proxmox VM's
+#  hosts: proxmox
+#  gather_facts: true
+#  roles:
+#    - roles/manage_vms
     
 - name: Provision Proxmox VM's
   hosts: 
@@ -107,10 +107,10 @@
 #   roles:
 #     - roles/manage_certs
 
-- name: Cleanup when we're done
-  hosts: cert_node
-  gather_facts: false
-  roles:
-    - roles/cleanup
+#- name: Cleanup when we're done
+#  hosts: cert_node
+#  gather_facts: false
+#  roles:
+#    - roles/cleanup
 
 

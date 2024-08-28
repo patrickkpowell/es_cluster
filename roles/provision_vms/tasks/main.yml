@@ -29,6 +29,15 @@
     - create
     - provision_vms
 
+- name: Ensure {{ tmp_dir }} exists
+  ansible.builtin.file:
+    path: '{{ tmp_dir }}'
+    state: directory
+    owner: elasticsearch
+  tags:
+    - create
+    - provision_vms
+
 - name: Install packages
   ansible.builtin.package:
     name: '{{item}}'

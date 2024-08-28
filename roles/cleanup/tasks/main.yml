@@ -4,7 +4,8 @@
 - name: "Remove locally fetched certificates"
   ansible.builtin.file:
     # path: "{{ tmp_dir }}/{{ cluster_name }}_certs.zip"
-    path: "/tmp/{{ cluster_name }}{{ item }}"
+    #path: "/tmp/{{ cluster_name }}{{ item }}"
+    path: "{{ tmp_dir }}"
     state: absent
   delegate_to: localhost
   with_items:
@@ -18,3 +19,11 @@
     - install_es
     - debug
 
+- name: "Remove remote certificates"
+  ansible.builtin.file:
+    path: "{{ es_cert_dir  }}"
+    state: absent
+  tags:
+    - create
+    - install_es
+    - debug

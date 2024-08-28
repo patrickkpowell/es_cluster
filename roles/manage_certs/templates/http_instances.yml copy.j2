@@ -1,0 +1,18 @@
+instances:
+{% for host in groups['all_es_nodes'] %}
+  - name: "{{ host }}"
+    dns:
+      - "{{ host }}"
+    ip:
+{% if hostvars[host]['priv_ip'] is defined %}
+      - "{{ hostvars[host]['priv_ip'] }}"
+{% else %}
+{% endif %}
+{% if hostvars[host]['ext_ip'] is defined %}
+{% if hostvars[host]['ext_ip'] != hostvars[host]['priv_ip'] %}
+      - "{{ hostvars[host]['ext_ip'] }}"
+{% else %}
+{% endif %}
+{% endif %}
+    filename: "{{ host }}"
+{% endfor %}

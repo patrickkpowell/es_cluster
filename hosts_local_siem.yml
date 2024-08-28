@@ -1,0 +1,147 @@
+---
+all:
+  hosts:
+    localhost:
+      localhost ansible_connection: 'local'
+      ansible_host: 127.0.0.1
+    # Master
+    ip-172-31-199-235.us-east-2.compute.internal:
+      priv_ip: 172.31.199.235
+      ext_ip: 3.129.205.47
+      ansible_host: ec2-3-129-205-47.us-east-2.compute.amazonaws.com 
+    # Data 1
+    ip-172-31-199-74.us-east-2.compute.internal:
+      priv_ip: 172.31.199.74
+      ext_ip: 18.216.45.63
+      ansible_host: ec2-18-216-45-63.us-east-2.compute.amazonaws.com 
+    # Data 2
+    ip-172-31-199-102.us-east-2.compute.internal:
+      priv_ip: 172.31.199.102
+      ext_ip: 18.219.216.131
+      ansible_host: ec2-18-219-216-131.us-east-2.compute.amazonaws.com
+    # Data 3
+    ip-172-31-199-69.us-east-2.compute.internal:
+      priv_ip: 172.31.199.69
+      ext_ip: 3.145.129.40
+      ansible_host: ec2-3-145-129-40.us-east-2.compute.amazonaws.com
+    # Kibana
+    ip-172-31-199-80.us-east-2.compute.internal:
+      priv_ip: 172.31.199.80
+      ext_ip: 18.191.194.21
+      ansible_host: ec2-18-191-194-21.us-east-2.compute.amazonaws.com
+cert_node:
+  hosts:
+    ec2-3-129-205-47.us-east-2.compute.amazonaws.com:
+data_nodes:
+  vars:
+    roles: ['data', 'ingest', 'remote_cluster_client']
+    svc_group: 'elasticsearch'
+  hosts:
+    ec2-18-216-45-63.us-east-2.compute.amazonaws.com:
+    ec2-18-219-216-131.us-east-2.compute.amazonaws.com:
+    ec2-3-145-129-40.us-east-2.compute.amazonaws.com:
+master_nodes:
+  vars:
+    roles: ['master']
+    svc_group: 'elasticsearch'
+  hosts:
+    ec2-3-129-205-47.us-east-2.compute.amazonaws.com:
+ml_nodes:
+  vars:
+    roles: ['ml', 'remote_cluster_client']
+    svc_group: 'elasticsearch'
+  hosts:
+    #es04.powellcompanies.com:
+seed_nodes:
+  children:
+    data_nodes:
+    master_nodes:
+    ml_nodes:
+elastic_nodes:
+  vars:
+    #artifact_repo_base_url: "http://artifacts.powellcompanies.com/elasticsearch"
+    artifact_repo_base_url: "https://artifacts.elastic.co/downloads"
+    es_version: "8.14.1"
+    kib_url: "https://kib01.powellcompanies.com:5601"
+    es_cert_dir: "/etc/elasticsearch/certs"
+    es_installer_url: "{{ artifact_repo_base_url }}/elasticsearch/elasticsearch-{{ es_version }}-x86_64.rpm"
+    es_installer_sha_url: "{{ artifact_repo_base_url }}/elasticsearch/elasticsearch-{{ es_version }}-x86_64.rpm.sha512"
+    kib_installer_url: "{{ artifact_repo_base_url }}/kibana/kibana-{{ es_version }}-x86_64.rpm"
+    kib_installer_sha_url: "{{ artifact_repo_base_url }}/kibana/kibana-{{ es_version }}-x86_64.rpm.sha512"
+    elastic_agent_installer_url: "{{ artifact_repo_base_url }}/elastic-agent-{{ es_version }}-x86_64.rpm"
+    elastic_agent_installer_sha_url: "{{ artifact_repo_base_url }}/elastic-agent-{{ es_version }}-x86_64.rpm.sha512"
+    metricbeat_installer_url: "{{ artifact_repo_base_url }}/metricbeat-{{ es_version }}-x86_64.rpm"
+    metricbeat_installer_sha_url: "{{ artifact_repo_base_url }}/metricbeat-{{ es_version }}-x86_64.rpm.sha512"
+    filebeat_installer_url: "{{ artifact_repo_base_url }}/filebeat-{{ es_version }}-x86_64.rpm"
+    filebeat_installer_sha_url: "{{ artifact_repo_base_url }}/filebeat-{{ es_version }}-x86_64.rpm.sha512"
+    fleet_policy_name: "powell-fleet-policy"
+    packages:
+      - "yum-utils"
+      - "net-tools"
+      - "mlocate"
+      - "wget"
+      - "zip"
+      - "unzip"
+      - "jq"
+      - "bash-completion"
+      - "bind-utils"
+      - "tar"
+    kib_user: "kibana"
+    cluster_name: "local-siem-cluster"
+    tmp_dir: "/tmp/elastic"
+    elastic_home: "/usr/share/elasticsearch"
+    elasticsearch_certutil_bin: "{{ elastic_home }}/bin/elasticsearch-certutil"
+    kibana_home: "/usr/share/kibana"
+    es_data_dir: "/var/lib/elasticsearch"
+    es_log_dir: "/var/log/elasticsearch"
+    es_config_dir: "/etc/elasticsearch"
+    # es_cert_dir: "{{ es_config_dir }}/certs"
+    elasticsearch_certutil_ca_path: "{{ es_config_dir }}/certs/ca"
+    kib_config_dir: "/etc/kibana"
+    es_config_file: "elasticsearch.yml"
+    kib_config_file: "kibana.yml"
+    es_service_name: "elasticsearch"
+    kib_service_name: "kibana"
+  children:
+    data_nodes:
+    master_nodes:
+    ml_nodes:
+    fleet_nodes:
+    kibana_nodes:
+kibana_nodes:
+  vars:
+    svc_group: 'kibana'
+  hosts:
+    ec2-18-191-194-21.us-east-2.compute.amazonaws.com:
+all_es_nodes:
+  children:
+    elastic_nodes:
+    kibana_nodes:
+    ml_nodes:
+    data_nodes:
+    master_nodes:
+fleet_nodes:
+  hosts:
+    #fl01.powellcompanies.com:
+  vars:
+    svc_group: 'root'
+elastic_agents:
+  children:
+    fleet_nodes:
+macos_nodes:
+  hosts:
+    192.168.3.138:
+      ansible_python_interpreter: /usr/bin/python3
+    192.168.3.144:
+      ansible_python_interpreter: /usr/bin/python3
+windows_nodes:
+  hosts:
+agents:
+  children:
+    all_es_nodes:
+    fleet_nodes:
+templates:
+  hosts:
+    estemplate.powellcompanies.com: null
+    kibtemplate.powellcompanies.com: null
+    mltemplate.powellcompanies.com: null
